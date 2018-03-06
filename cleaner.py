@@ -11,6 +11,9 @@ import csv
 def clean(row):
     if(row[1]==None or row[4]==None or row[5]==None):
         return None
+    genre = no_genre(row[4])
+    if(genre is None):
+        return None
     split = row[5].split('\n')
     if(len(split) < 5):
         return None
@@ -21,6 +24,13 @@ def clean(row):
     return "\n".join(split);
 
 
+# Only checking for the "Not Available" case, decide if we want to remove "Other" as well
+def no_genre(genre):
+    if genre == "Not Available":
+        return None
+    else:
+        return genre
+
 def is_en(text,split):
     not_eng=0;
     for line in split:
@@ -30,7 +40,6 @@ def is_en(text,split):
     if(langid.classify(text)[0] != 'en' or not_eng > (len(split)/8)):
         return False
     return True
-
 
 def rmv_annotation(split):
     p=re.compile("(\(x[1-9]\))" , re.IGNORECASE)
@@ -61,7 +70,7 @@ def main():
     new_path = os.getcwd() + '/dataset/cleaned_lyrics.csv'
     #need to check for cache?
     csv_reader = dataset.load_data(path)
-    f=open(new_path, 'w')
+    f=open(new_path, 'w', encoding="utf8")
     fieldnames = ['song', 'genre','lyrics']
     writer = csv.DictWriter(f, fieldnames=fieldnames)
     writer.writeheader()
