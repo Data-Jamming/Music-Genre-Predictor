@@ -27,13 +27,13 @@ class rnn(nn.Module):
         self.softmax = nn.LogSoftmax(dim=0)
         self.out_layers = []
         self.out_layers.append(nn.Linear(n_input + self.rec_size, out_layers[0]))
-        for n_layer in out_layers[:-1]:
+        for i, n_layer in enumerate(out_layers[:-1]):
             self.out_layers.append(nn.Linear(n_layer, out_layers[i+1]))
         self.out_layers.append(nn.Linear(out_layers[-1], self.n_classes))
         # I'm thinking rec_layers should be really small probably only one layer???
         self.rec_layers=[]
         self.rec_layers.append(nn.Linear(n_input + self.rec_size, rec_layers[0]))
-        for n_layer in rec_layers[:-1]:
+        for i, n_layer in enumerate(rec_layers[:-1]):
                 self.rec_layers.append(nn.Linear(n_layer, rec_layers[i+1]))
 
         self.rec_layers.append(nn.Linear(rec_layers[-1], self.rec_size))
