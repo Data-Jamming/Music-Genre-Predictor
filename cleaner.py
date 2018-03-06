@@ -26,7 +26,7 @@ def clean(row):
 
 # Only checking for the "Not Available" case, decide if we want to remove "Other" as well
 def no_genre(genre):
-    if genre == "Not Available":
+    if genre == "Not Available" or genre == "Other":
         return None
     else:
         return genre
