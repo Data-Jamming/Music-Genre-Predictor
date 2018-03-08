@@ -8,6 +8,7 @@ import sys
 import re
 import csv
 
+#removes if essential columns are null, if lyrics are too short, or if lyrics are not in english
 def clean(row):
     if(row[1]==None or row[4]==None or row[5]==None):
         return None
@@ -68,7 +69,6 @@ def rmv_annotation(split):
 def main():
     path = os.getcwd() + '/dataset/lyrics.csv'
     new_path = os.getcwd() + '/dataset/cleaned_lyrics.csv'
-    #need to check for cache?
     csv_reader = dataset.load_data(path)
     f=open(new_path, 'w', encoding="utf8")
     fieldnames = ['song', 'genre','lyrics']
@@ -78,5 +78,5 @@ def main():
         res = clean(line)
         if(res!=None):
             writer.writerow({'song': line[1], 'genre': line[4], 'lyrics':res})
-        
+
 main()
