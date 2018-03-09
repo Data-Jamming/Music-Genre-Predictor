@@ -53,7 +53,7 @@ def count_things(sentences):
 def strip_annotation(text):
 	 global annotation_count
 	 p=re.compile("\[[a-zA-z0-9\s]+(:)?\]" , re.IGNORECASE)
-	 p2=re.compile("Chorus:" , re.IGNORECASE)
+	 p2=re.compile("Chorus(:?)" , re.IGNORECASE)
 	 res = re.subn(p,"",text)
 	 text = res[0]
 	 annotation_count = annotation_count + res[1]
@@ -90,12 +90,16 @@ def is_sound_match(phon_1, phon_2):
 def get_rhyme_scheme(s):
     sound_dict ={}
     labels=[]
-    s[:] = [x for x in s if x != []]
     letter = 65
-    sound_dict[chr(letter)]=get_phonetic(s[0][len(s[0])-1])
-    labels.append(chr(letter))
-    for line in s[1:]:
+    counter=0
+    for line in s:
         tmp=65
+        if(line==[]):
+            continue
+        if(labels==[]):
+            sound_dict[chr(tmp)]=get_phonetic(line[len(line)-1])
+            labels.append(chr(tmp))
+            continue
         while(True):
             if(tmp > letter):
                 letter =letter+1
@@ -112,6 +116,7 @@ def get_rhyme_scheme(s):
                 if(tmp == 90):
                    tmp=97
         labels.append(chr(tmp))
+        counter = counter +1
     return " ".join(['None' if elem is None else elem for elem in labels])
 
 def gen_dict(lyrics, dict_res):
@@ -121,10 +126,12 @@ def gen_dict(lyrics, dict_res):
 	global total_sylls
 	lyrics = strip_annotation(lyrics)
 	sentences = lyrics.split("\n")
+	sentences= [x for x in sentences if x!=[]]
 	count_things(sentences)
 	splits=[]
 	for s in sentences:
 	    splits.append(s.split())
+	splits= [x for x in splits if x!=[]]
 	rhymes = get_rhyme_scheme(splits)
 	dict_res['annotations'] = annotation_count
 	dict_res['syllables'] = total_sylls
