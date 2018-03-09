@@ -16,6 +16,7 @@ POS_counts= {'VB':0, 'JJ':0, 'WR':0, 'NN':0, 'DT':0, 'WD':0, 'IN':0, 'CC':0, 'CD
 annotation_count=0
 avg_syll_per_line=0
 total_sylls=0
+word_count=0
 
 
 #is digit
@@ -34,10 +35,12 @@ def count_syllables(word):
 def count_things(sentences):
 	global avg_syll_per_line
 	global total_sylls
+	global word_count
 	for s in sentences:
 		words = s.split()
 		if(len(words)==0):
 			continue
+		word_count = word_count + len(words)
 		tokens = nltk.pos_tag(words)
 		for word, token in zip(words, tokens):
 			num = count_syllables(word)
@@ -124,6 +127,7 @@ def gen_dict(lyrics, dict_res):
 	global annotation_count
 	global avg_syll_per_line
 	global total_sylls
+	global word_count
 	lyrics = strip_annotation(lyrics)
 	sentences = lyrics.split("\n")
 	sentences= [x for x in sentences if x!=[]]
@@ -136,6 +140,7 @@ def gen_dict(lyrics, dict_res):
 	dict_res['annotations'] = annotation_count
 	dict_res['syllables'] = total_sylls
 	dict_res['syll_per_line'] = avg_syll_per_line
+	dict_res['words']= word_count
 	dict_res['verb'] = POS_counts['VB']
 	dict_res['adj'] = POS_counts['JJ'] + POS_counts['WR']
 	dict_res['noun'] = POS_counts['NN']
@@ -160,7 +165,7 @@ def main() :
 	csv_reader = dataset.load_data(path)
 	new_path = os.getcwd() + '/dataset/nl_features.csv'
 	f=open(new_path, 'w')
-	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'rhyme']
+	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'rhyme']
 	writer = csv.DictWriter(f, fieldnames=fieldnames)
 	writer.writeheader()
 	counter=0
