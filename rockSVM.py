@@ -15,9 +15,12 @@ def main():
 			continue
 		
 		currentSong = []
-		for i in range(1, len(line)):
+		for i in range(0, len(line)):
 			# check to see if we are working with the genre
-			if i == 1:
+			if i == 0:
+				# Include the name of the song
+				currentSong.append(line[0])
+			elif i == 1:
 				if line[i] == "Rock":
 					# 1 is rock
 					currentSong.append(1)
@@ -32,6 +35,7 @@ def main():
 	# Shuffle the matrix before separating into the feature matrix and the classification vector
 	random.shuffle(matrix)
 
+	#TODO: For testing purposes I probably want to include the name of the song as well so that we can go backwards and verify
 
 	x = []
 	y = []
@@ -40,33 +44,34 @@ def main():
 
 		'''
 		Ordering found in the CSV - song name has already been removed at this time, and genre is either Rock (1) or Not rock (0)
-		0. genre
-		1. annotations
-		2. syllables
-		3. syll_per_line
-		4. verb
-		5. adj
-		6. noun
-		7. pre-det
-		8. det
-		9. prep
-		10. pronoun
-		11. pos
-		12. conj
-		13. cardinal
-		14. adverb
-		15. particle
-		16. exist
-		17. inj
-		18. aux
-		19. rhyme scheme
+		0. Song Name - include song name so that we can go backwards
+		1. genre
+		2. annotations
+		3. syllables
+		4. syll_per_line
+		5. verb
+		6. adj
+		7. noun
+		8. pre-det
+		9. det
+		10. prep
+		11. pronoun
+		12. pos
+		13. conj
+		14. cardinal
+		15. adverb
+		16. particle
+		17. exist
+		18. inj
+		19. aux
+		20. rhyme scheme
 		'''
 
 		#TODO: Allow for different permutations of above to be ran
 
-		x.append([float(line[1]), float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18])])
+		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19])])
 		# x.append([float(line[1]), float(line[2]), float(line[3]), float(line[4])])
-		y.append(int(line[0]))
+		y.append(int(line[1]))
 	x = np.asarray(x)
 	y = np.asarray(y)
 
@@ -98,6 +103,15 @@ def main():
 
 	print("Answers defined by the dataset, length = ", len(y_test))
 	print(y_test)
+
+	# go through the matrix and retrieve the song names
+	# song_names = []
+	# for i in range(800,999):
+	# 	line = matrix[i]
+	# 	song_names.append(line[0])
+
+	# print("The length of song names is: " + str(len(song_names)))
+	# print(song_names)
 
 	correct = 0
 	test_rock_count = 0
