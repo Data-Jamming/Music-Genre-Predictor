@@ -4,9 +4,11 @@ import sys
 import csv
 
 
-# Process the data to remove the "Not Available" Genres - not complete yet
+# Simple Program that counts the number of Rock and Not Rock entries that are found in a CSV file
+# The Genre of the song should always be listed at index 1 of the row
 def main():
-	path = os.getcwd() + "/dataset/cleaned_lyrics.csv"
+	# path = os.getcwd() + "/dataset/cleaned_lyrics.csv"
+	path = os.getcwd() + "/dataset/nl_features_subset.csv"
 	csv_reader = dataset.load_data(path)
 
 	rock_count = 0
@@ -15,6 +17,11 @@ def main():
 	other_count = 0
 
 	for line in csv_reader:
+		if len(line) == 0:
+			continue
+		if "genre" in line or "annotations" in line:
+			continue
+
 		if line[1] == "Rock":
 			rock_count += 1
 		elif line[1] == "Not Available":
@@ -24,21 +31,10 @@ def main():
 		else:
 			not_rock_count += 1
 
-		# Perform Natural Language Processing with the lyrics -> line[2]
-
 	print("Rock count is : " + str(rock_count))
 	print("Not Rock Count is: " + str(not_rock_count))
 	print("Not Available Count is " + str(NA_count))
 	print("Other count is " + str(other_count))
-
-	new_path = os.getcwd() + '/dataset/rock_features.csv'
-
-	f = open(new_path, 'w', encoding='utf8')
-	fieldnames = ['genre', 'wordCount', 'verbCount', 'adjCount', 'determCount', 'prepCount', 'adverbCount', 'conjunctionCount', 'totSyllableCount', 'avgSyllablePerLine']
-	writer = csv.DictWriter(f, fieldnames=fieldnames)
-	writer.writeheader()
-	writer.writerow({'genre': 1, 'wordCount': 1, 'verbCount': 1, 'adjCount': 1, 'determCount': 1, 'prepCount': 1, 'adverbCount': 1, 'conjunctionCount': 1, 'totSyllableCount': 1, 'avgSyllablePerLine': 1})
-
 
 if __name__ == "__main__":
 	main()

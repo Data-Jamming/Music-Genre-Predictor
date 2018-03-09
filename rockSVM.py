@@ -37,7 +37,32 @@ def main():
 	y = []
 	# Separate the matrix into the feature matrix and the classification vector
 	for line in matrix:
-		# TODO: Allow for different permutations of the data set to be ran
+
+		'''
+		Ordering found in the CSV - song name has already been removed at this time, and genre is either Rock (1) or Not rock (0)
+		0. genre
+		1. annotations
+		2. syllables
+		3. syll_per_line
+		4. verb
+		5. adj
+		6. noun
+		7. pre-det
+		8. det
+		9. prep
+		10. pronoun
+		11. pos
+		12. conj
+		13. cardinal
+		14. adverb
+		15. particle
+		16. exist
+		17. inj
+		18. aux
+		19. rhyme scheme
+		'''
+
+		#TODO: Allow for different permutations of above to be ran
 
 		x.append([float(line[1]), float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18])])
 		# x.append([float(line[1]), float(line[2]), float(line[3]), float(line[4])])
@@ -46,24 +71,19 @@ def main():
 	y = np.asarray(y)
 
 	# Scale the data matrix
-	x_scaled = preprocessing.scale(x)
-
-	# Next I would need some subset of the data matrix and classes to be used for training and testing
-	
 	# Note: support vector machine algorithms are not scale invariant, so it is highly recommended to scale your data
 	# For example, scale each attribute on the inmput vector X to [0,1] or [-1,1]
-	# Note: the same scaling must be applied to the test vector to obtain meaningful results
+	x_scaled = preprocessing.scale(x)
 	
-	# to be used for training
+	# to be used for training - x_train should be used with y_train (they should correspond with eachother)
 	x_train = x_scaled[:800]
 	y_train = y[:800]
 
-	# to be used for testing
+	# to be used for testing - x_test should be used with y_test (they should correspond with eachother)
 	x_test = x_scaled[800:]
 	y_test = y[800:]
 
-
-	clf = SVC(C = 1, kernel = "linear")
+	clf = SVC(C = 1, kernel = "linear") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
 	clf.fit(x_train, y_train)
 	
 	# Individually test each of the points in the testing set
@@ -80,14 +100,19 @@ def main():
 	print(y_test)
 
 	correct = 0
+	test_rock_count = 0
 	for i in range(0, len(y_test)):
 		if answers[i] == y_test[i]:
 			correct += 1
+		if answers[i] == 1:
+			test_rock_count += 1
+
+	print("The actual number of rock songs found in the testing set", test_rock_count)
 
 	print("My Calculated percentage: " + str(correct/len(y_test)))
 	scr = clf.score(x_test, y_test)
 	print("The percentage calculated by sci-kit Learn: " + str(scr))
-	# for k in ['linear', 'sigmoid', 'rbf']:
+	# for k in ['linear', 'poly', 'sigmoid', 'rbf']:
 	# 	for i in range(1,100):
 
 			# Setting C: c is 1 by default, and it's a reasonable default choice. If you have a lot of noisy observations, you should decrease it
