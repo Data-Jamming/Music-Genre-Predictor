@@ -51,7 +51,7 @@ class Trainer():
     def train(self):
         criterion = nn.NLLLoss()
         o = torch.optim.SGD(self.model.parameters(), lr = 0.001)
-        songs = [[x, y] for x in self.data for y in self.labels]
+        songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
         random.shuffle(songs)
         for i, song in enumerate(songs):
             lyrics = song[0]
