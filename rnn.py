@@ -20,7 +20,7 @@ class rnn(nn.Module):
     def __init__(self, n_input, out_layers, rec_layers, n_classes):
         super(rnn, self).__init__()
         self.n_classes = n_classes
-        self.rec_size = n_classes/2  # I'm not really sure how big this should be I just picked arbitrarily.
+        self.rec_size = n_classes  # I'm not really sure how big this should be I just picked arbitrarily.
         #We might want it to be at least the size of n_classes to say how likely it thinks each class is 
         #but maybe it should try to compress that info?
         self.n_input = n_input
@@ -37,6 +37,10 @@ class rnn(nn.Module):
                 self.rec_layers.append(nn.Linear(n_layer, rec_layers[i+1]))
 
         self.rec_layers.append(nn.Linear(rec_layers[-1], self.rec_size))
+        
+        for i, layer in enumerate(self.out_layers + self.rec_layers):
+            self.register_parameter("l" + str(i), layer.weight)
+            self.register_parameter("l" + str(i), layer.bias)
 
     def forward(self, input, rec):
         combine=torch.cat((input, rec), 1)
