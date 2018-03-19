@@ -143,14 +143,45 @@ def main():
 	Training multiple different SVMs and running the tests on them
 	'''
 	print()
+
+	overall_best_accuracy = 0
+	overall_best_kernel = None
+	overall_best_slack_variable = None
+
 	for k in ['linear', 'poly', 'sigmoid', 'rbf']:
-		for i in [0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.3, 1.5, 1.7, 2]:
+		
+		# Create a list and store the highest one each time
+		max_accuracy = 0
+		max_slack_variable = None
+
+		for i in [0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.3, 1.5, 1.7, 2, 2.3, 2.5, 2.7, 3, 3.3, 3.5, 3.7, 3.9, 4, 10, 15, 20, 30, 50, 70, 100]:
 			clf = SVC(C = i, kernel = k)
 			clf.fit(x_train, y_train)
 			scr = clf.score(x_test, y_test)
+
+			if scr >= max_accuracy:
+				max_accuracy = scr
+				max_slack_variable = i
+
+			if scr >= overall_best_accuracy:
+				overall_best_accuracy = scr
+				overall_best_kernel = k
+				overall_best_slack_variable = i
+			
 			print("Kernel:", k , "Slack variable:", i, "Score:", scr)
 		print()
+		print("*********************************")
+		print("Current Kernel:", k)
+		print("Max Accuracy:", max_accuracy)
+		print("Slack Variable for Max Accuracy:", max_slack_variable)
+		print("*********************************")
+		print()
 
+	print("***************************************")
+	print("OVERALL STATISTICS:")
+	print("Overall best accuracy was:", overall_best_accuracy)
+	print("Overall best accuracy occurred with kernel:", overall_best_kernel, "and Slack Variable", overall_best_slack_variable)
+	print("***************************************")
 
 if __name__ == "__main__":
 	main()
