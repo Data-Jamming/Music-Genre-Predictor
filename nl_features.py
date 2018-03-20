@@ -65,6 +65,7 @@ def count_things(sentences):
 
 def strip_annotation(text):
 	 global annotation_count
+	 annotation_count = 0
 	 p=re.compile("\[[a-zA-z0-9\s]+(:)?\]" , re.IGNORECASE)
 	 p2=re.compile("Chorus(:?)" , re.IGNORECASE)
 	 res = re.subn(p,"",text)
@@ -173,7 +174,7 @@ def main() :
 
 	path = os.getcwd() + '/dataset/cleaned_lyrics.csv'
 	csv_reader = dataset.load_data(path)
-	new_path = os.getcwd() + '/dataset/nl_features_subset.csv'
+	new_path = os.getcwd() + '/dataset/nl_features.csv'
 	f=open(new_path, 'w', encoding="utf8")
 	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'rhyme']
 	writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -188,8 +189,6 @@ def main() :
 			counter = counter +1
 			continue
 
-		if(counter == 1001):
-			break
 		writer.writerow(res_dict)
 		counter = counter +1
 main()
