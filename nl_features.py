@@ -36,6 +36,16 @@ def count_things(sentences):
 	global avg_syll_per_line
 	global total_sylls
 	global word_count
+	global POS_counts
+
+	avg_syll_per_line = 0
+	total_sylls = 0
+	word_count = 0
+
+	# Reset all the key-value pairs in the dict
+	for key in POS_counts:
+		POS_counts[key] = 0
+
 	for s in sentences:
 		words = s.split()
 		if(len(words)==0):
@@ -55,6 +65,7 @@ def count_things(sentences):
 
 def strip_annotation(text):
 	 global annotation_count
+	 annotation_count = 0
 	 p=re.compile("\[[a-zA-z0-9\s]+(:)?\]" , re.IGNORECASE)
 	 p2=re.compile("Chorus(:?)" , re.IGNORECASE)
 	 res = re.subn(p,"",text)
@@ -164,7 +175,7 @@ def main() :
 	path = os.getcwd() + '/dataset/cleaned_lyrics.csv'
 	csv_reader = dataset.load_data(path)
 	new_path = os.getcwd() + '/dataset/nl_features.csv'
-	f=open(new_path, 'w')
+	f=open(new_path, 'w', encoding="utf8")
 	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'rhyme']
 	writer = csv.DictWriter(f, fieldnames=fieldnames)
 	writer.writeheader()
@@ -177,6 +188,7 @@ def main() :
 		if(counter==0):
 			counter = counter +1
 			continue
+
 		writer.writerow(res_dict)
 		counter = counter +1
 main()
