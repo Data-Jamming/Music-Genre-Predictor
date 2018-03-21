@@ -15,13 +15,13 @@ class Trainer():
         
         next(csv_reader)
 
-        for i in range(225): #TEMPORARY 
+        for i in range(0): #TEMPORARY 
             next(csv_reader)
 
         self.data = []
         self.labels = []
 
-        datasize = 100 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 1000 #Just make this arbitrarily large when you want to use the whole dataset
         
         print("Loading data...")
         for i in range(datasize):
@@ -41,7 +41,7 @@ class Trainer():
 
         #print([data_enconder[word] for word in data[-1]])
     
-        self.model = rnn(len(self.data_encoder), [64, 64], [64, 64], len(self.label_encoder))
+        self.model = rnn(len(self.data_encoder), [256, 64], [64], len(self.label_encoder))
     
     def get_pred(self, lyrics):
         rec = self.model.init_rec()
@@ -53,25 +53,24 @@ class Trainer():
         return pred
         
     def train(self):
-        criterion = nn.BCELoss()
+        criterion = nn.CrossEntropyLoss()
         o = torch.optim.SGD(self.model.parameters(), lr = 0.001)
         for param in self.model.parameters():
             print(param.data, param.size)
         o.zero_grad()
         songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
-        #random.shuffle(songs)
+        random.shuffle(songs)
         for i, song in enumerate(songs):
             lyrics = song[0]
             genre = song[1]
             pred = self.get_pred(lyrics)
-            y = Variable(torch.FloatTensor(1, len(self.label_encoder)))
-            y[0,self.label_encoder[genre]] = 1
+            y = Variable(torch.LongTensor([self.label_encoder[genre]]))
             
             if i%PRINTERVAL == 0:
                 value, index = torch.max(pred, 1)
-                print(pred)
-                print(value)
-                print(str(i)+ ":", "Guessing", self.label_decoder[int(index[0])], "With", int(value[0]), "confidence. Correct genre was", genre + ".")
+                #print(pred)
+                #print(value)
+                print(str(i)+ ":", "Guessing", self.label_decoder[int(index[0])], "With", float(value[0]), "confidence. Correct genre was", genre + ".")
             
             loss = criterion(pred, y)
             loss.backward()
