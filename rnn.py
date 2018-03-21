@@ -40,21 +40,24 @@ class rnn(nn.Module):
         
         for i, layer in enumerate(self.out_layers + self.rec_layers):
             self.register_parameter("l" + str(i), layer.weight)
-            self.register_parameter("l" + str(i), layer.bias)
+            self.register_parameter("b" + str(i), layer.bias)
 
     def forward(self, input, rec):
         combine=torch.cat((input, rec), 1)
-
+        
         output=F.relu(self.out_layers[0](combine))
-        for l in self.out_layers[1:]:
-            output=F.relu(l(output))
-        output=self.softmax(output)
+        for l in self.out_layers[1:-1]:
+            output=F.tanh(l(output))
+        output=F.relu(self.out_layers[-1](output))
+        #output=self.softmax(output)
 
         rec=F.relu(self.rec_layers[0](combine))
         for l in self.rec_layers[1:]:
             rec=F.relu(l(rec))
-        rec=self.softmax(rec)
 
+        print("output:", output)
+        print("rec:", rec)
+            
         return output, rec
 
     def init_rec(self):
