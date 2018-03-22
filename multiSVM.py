@@ -45,7 +45,7 @@ def automated_test():
 
 		# for i in [0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.3, 1.5, 1.7, 2, 2.3, 2.5, 2.7, 3, 3.3, 3.5, 3.7, 3.9, 4, 10, 15, 20, 30, 50, 70, 100, 200, 300, 400, 500]:
 		for i in [1, 100, 1000]:
-			clf = SVC(C = i, kernel = k)
+			clf = SVC(C = i, kernel = k, decision_function_shape = "ovo")
 			clf.fit(x_train, y_train)
 			scr = clf.score(x_test, y_test)
 
@@ -98,7 +98,7 @@ def manual_test():
 	global training_size
 	global testing_size
 	global matrix
-	clf = SVC(C = 1, kernel = "linear") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
+	clf = SVC(C = 1, kernel = "linear", decision_function_shape = "ovo") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
 	clf.fit(x_train, y_train)
 	
 	# Individually test each of the points in the testing set
@@ -190,7 +190,7 @@ def generate_full_matrix(csv_reader):
 				elif line[i] == "Pop":
 					# 9 is Pop
 					currentSong.append(9)
-				elif line[i] == "R&B"
+				elif line[i] == "R&B":
 					# 10 is R&B
 					currentSong.append(10)
 				else:
@@ -217,8 +217,8 @@ def main():
 	global matrix
 	global overall_size
 
-	# path = os.getcwd() + '/dataset/nl_features_subset.csv'
-	path = os.getcwd() + '/dataset/nl_features.csv'
+	path = os.getcwd() + '/dataset/nl_features_subset.csv'
+	# path = os.getcwd() + '/dataset/nl_features.csv'
 	csv_reader = dataset.load_data(path)
 	matrix = generate_full_matrix(csv_reader)
 
