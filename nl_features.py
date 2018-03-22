@@ -17,6 +17,9 @@ annotation_count=0
 avg_syll_per_line=0
 total_sylls=0
 word_count=0
+aa_count=0;
+abab_count =0;
+abba_count =0;
 
 
 #is digit
@@ -55,7 +58,7 @@ def count_things(sentences):
 		for word, token in zip(words, tokens):
 			num = count_syllables(word)
 			if(num!=-1):
-				total_sylls = total_sylls +1
+				total_sylls = total_sylls +num
 				curr=token[1][:2]
 				try:
 					POS_counts[curr] = POS_counts[curr] +1
@@ -131,7 +134,23 @@ def get_rhyme_scheme(s):
                    tmp=97
         labels.append(chr(tmp))
         counter = counter +1
-    return " ".join(['None' if elem is None else elem for elem in labels])
+    return "".join(['None' if elem is None else elem for elem in labels])
+
+def count_rhymes(scheme):
+	global aa_count
+	global abab_count
+	global abba_count
+	aa_count =0
+	abba_count=0
+	abab_count=0
+	for i in range(len(scheme)-1):
+		if scheme[i]==scheme[i+1]:
+			aa_count = aa_count +1
+	for i in range(len(scheme)-3):
+		if((scheme[i]==scheme[i+2]) and (scheme[i+1]==scheme[i+3])):
+			abab_count = abab_count +1
+		if((scheme[i]==scheme[i+3]) and (scheme[i+1]==scheme[i+2])):
+			abba_count = abba_count +1
 
 def gen_dict(lyrics, dict_res):
 	global POS_counts
@@ -139,6 +158,9 @@ def gen_dict(lyrics, dict_res):
 	global avg_syll_per_line
 	global total_sylls
 	global word_count
+	global aa_count
+	global abab_count
+	global abba_count
 	lyrics = strip_annotation(lyrics)
 	sentences = lyrics.split("\n")
 	sentences= [x for x in sentences if x!=[]]
@@ -147,7 +169,7 @@ def gen_dict(lyrics, dict_res):
 	for s in sentences:
 	    splits.append(s.split())
 	splits= [x for x in splits if x!=[]]
-	rhymes = get_rhyme_scheme(splits)
+	count_rhymes(get_rhyme_scheme(splits))
 	dict_res['annotations'] = annotation_count
 	dict_res['syllables'] = total_sylls
 	dict_res['syll_per_line'] = avg_syll_per_line
@@ -167,7 +189,9 @@ def gen_dict(lyrics, dict_res):
 	dict_res['inj'] = POS_counts['UH']
 	dict_res['aux'] = POS_counts['MD']
 	dict_res['cardinal'] = POS_counts['CD']
-	dict_res['rhyme'] = rhymes
+	dict_res['aa'] = aa_count
+	dict_res['abab'] = abab_count
+	dict_res['abba'] = abba_count
 
 
 def main() :
@@ -176,7 +200,7 @@ def main() :
 	csv_reader = dataset.load_data(path)
 	new_path = os.getcwd() + '/dataset/nl_features.csv'
 	f=open(new_path, 'w', encoding="utf8")
-	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'rhyme']
+	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'aa','abab','abba']
 	writer = csv.DictWriter(f, fieldnames=fieldnames)
 	writer.writeheader()
 	counter=0
@@ -188,7 +212,6 @@ def main() :
 		if(counter==0):
 			counter = counter +1
 			continue
-
 		writer.writerow(res_dict)
 		counter = counter +1
 main()
