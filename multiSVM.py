@@ -166,6 +166,33 @@ def generate_full_matrix(csv_reader):
 				if line[i] == "Rock":
 					# 1 is rock
 					currentSong.append(1)
+				elif line[i] == "Country":
+					# 2 is Country
+					currentSong.append(2)
+				elif line[i] == "Electronic":
+					# 3 is Electronic
+					currentSong.append(3)
+				elif line[i] == "Folk":
+					# 4 is Folk
+					currentSong.append(4)
+				elif line[i] == "Hip-Hop":
+					# 5 is Hip-Hop
+					currentSong.append(5)
+				elif line[i] == "Indie":
+					# 6 is Indie
+					currentSong.append(6)
+				elif line[i] == "Jazz":
+					# 7 is Jazz
+					currentSong.append(7)
+				elif line[i] == "Metal":
+					# 8 is Metal
+					currentSong.append(8)
+				elif line[i] == "Pop":
+					# 9 is Pop
+					currentSong.append(9)
+				elif line[i] == "R&B"
+					# 10 is R&B
+					currentSong.append(10)
 				else:
 					# 0 is not rock
 					currentSong.append(0)
@@ -261,9 +288,9 @@ def main():
 	x_test = x_scaled[training_size:]
 	y_test = y[training_size:]
 
-	# manual_test()
+	manual_test()
 
-	automated_test()
+	# automated_test()
 
 if __name__ == "__main__":
 	main()
