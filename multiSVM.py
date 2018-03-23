@@ -21,6 +21,56 @@ x_scaled = None
 
 matrix = None
 
+
+def genres_correct(preds, y_test):
+
+	rock_correct = 0
+	country_correct = 0
+	electronic_correct = 0
+	folk_correct = 0
+	hiphop_correct = 0
+	indie_correct = 0
+	jazz_correct = 0
+	metal_correct = 0
+	pop_correct = 0
+	rb_correct = 0
+
+	# just create a dictionary of these
+	for i in range(len(preds)):
+		if preds[i] == y_test[i] and preds[i] == 1:
+			rock_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 2:
+			country_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 3:
+			electronic_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 4:
+			folk_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 5:
+			hiphop_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 6:
+			indie_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 7:
+			jazz_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 8:
+			metal_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 9:
+			pop_correct += 1
+		elif preds[i] == y_test[i] and preds[i] == 10:
+			rb_correct += 1
+
+	print("1. Rock correct:", rock_correct)
+	print("2. Country correct:", country_correct)
+	print("3. Electronic correct:", electronic_correct)
+	print("4. Folk correct:", folk_correct)
+	print("5. Hip Hop correct:", hiphop_correct)
+	print("6. Indie correct:", indie_correct)
+	print("7. Jazz correct:", jazz_correct)
+	print("8. Metal correct:", metal_correct)
+	print("9. Pop correct:", pop_correct)
+	print("10. R&B Correct:", rb_correct)
+
+
+
 '''
 Trains and tests a SVM with varying Kernels and Slack Variable Coefficients
 
@@ -64,13 +114,13 @@ def automated_test():
 			print("actual distribution\n")
 			print(Counter(y_test))
 			print("predicted distribution\n")
-			print(preds)
 			print(Counter(preds))
 			bad_count =0
-			for k in range(len(preds)):
-				if(preds[k]!=y_test[k]):
+			for l in range(len(preds)):
+				if(preds[l]!=y_test[l]):
 					bad_count = bad_count +1
 			print(bad_count)
+			genres_correct(preds, y_test)
 			preds.clear()
 			print("Kernel:", k , "Slack variable:", i, "Score:", scr)
 		print()
@@ -231,8 +281,8 @@ def main():
 	global matrix
 	global overall_size
 
-	# path = os.getcwd() + '/dataset/nl_features_subset.csv'
-	path = os.getcwd() + '/dataset/nl_features.csv'
+	path = os.getcwd() + '/dataset/nl_features_subset.csv'
+	# path = os.getcwd() + '/dataset/nl_features.csv'
 	csv_reader = dataset.load_data(path)
 	matrix = generate_full_matrix(csv_reader)
 
