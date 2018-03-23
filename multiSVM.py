@@ -5,6 +5,7 @@ from utils import dataset
 import os
 import random
 import math
+from collections import Counter
 
 x_train = None
 x_test = None
@@ -36,7 +37,7 @@ def automated_test():
 	overall_best_accuracy = 0
 	overall_best_kernel = None
 	overall_best_slack_variable = None
-
+	preds=[]
 	for k in ['linear', 'poly', 'rbf']:
 	# for k in ['linear']:
 		# Create a list and store the highest one each time
@@ -47,6 +48,8 @@ def automated_test():
 		for i in [1, 50, 100]:
 			clf = SVC(C = i, cache_size = 1000, kernel = k, decision_function_shape = "ovo")
 			clf.fit(x_train, y_train)
+			for j in range(len(x_test)):
+				preds.append(clf.predict(x_test[i]))
 			scr = clf.score(x_test, y_test)
 
 			if scr >= max_accuracy:
@@ -57,7 +60,11 @@ def automated_test():
 				overall_best_accuracy = scr
 				overall_best_kernel = k
 				overall_best_slack_variable = i
-			
+			print("actual distribution\n")
+			print(Counter(y_test))
+			print("predicted distribution\n")
+			print(Counter(preds))
+			preds.clear()
 			print("Kernel:", k , "Slack variable:", i, "Score:", scr)
 		print()
 		print("*********************************")
@@ -100,7 +107,7 @@ def manual_test():
 	global matrix
 	clf = SVC(C = 100, cache_size = 1000, kernel = "linear", decision_function_shape = "ovo") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
 	clf.fit(x_train, y_train)
-	
+
 	# Individually test each of the points in the testing set
 	answers = []
 	for i in range(training_size,len(x_scaled)):
@@ -273,15 +280,15 @@ def main():
 	overall_size = len(x_scaled)
 
 	# Training data should be 0 - training_size
-	training_size = math.ceil(len(x_scaled) * .80) 
-	
+	training_size = math.ceil(len(x_scaled) * .80)
+
 	# Testing data should be testing_size (training_size + 1) - len(matrix)
 	# I guess because of the inclusive, exclusive testing_size should just start where training_size ends
 	testing_size = training_size
 
 	print("The length of training size is:", training_size)
 	print("The length of testing size is:", testing_size)
-	
+
 	# to be used for training - x_train should be used with y_train (they should correspond with eachother)
 	x_train = x_scaled[:training_size]
 	y_train = y[:training_size]
