@@ -2,4 +2,7 @@ numpy>=1.8.2 --only-binary numpy
 scipy>=0.13.3 --only-binary scipy
 scikit-learn==0.19.1
 langid==1.1.6
-nltk>=3.3.2 -- you may need to supplementary downloads of textual resources
+# nltk>=3.3.2 -- you may need to supplementary downloads of textual resources
+nltk
+torchvision
+torch

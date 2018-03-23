@@ -42,27 +42,36 @@ class Trainer():
         #print([data_enconder[word] for word in data[-1]])
         self.model = rnn(len(self.data_encoder), [64, 64], [64, 64], len(self.label_encoder))
 
+    # TODO: compile list of predictions to see mean and mode, for example?
     def get_pred(self, lyrics):
-        rec = self.model.init_rec()
+        self.model.init_hidden_states()
+        preds = []
         for word in lyrics:
-            #print(word)
-            input = Variable(torch.zeros(1, len(self.data_encoder)))
-            input[0, self.data_encoder[word]] = 1
-            pred, rec = self.model.forward(input, rec)
-        return pred
+            # create one-hot encoding for word
+            input_word = Variable(torch.zeros(1, len(self.data_encoder)))
+            input_word[0, self.data_encoder[word]] = 1
+            # feed into model to get prediction
+            preds.append(self.model.forward(input_word))
+
+        # return the last prediction made by the model
+        return preds[-1]
 
     def train(self):
+        # multi-class loss function
+        # TODO: validate this choice
         criterion = nn.CrossEntropyLoss()
+
+        # TODO: validate this choice
         o = torch.optim.SGD(self.model.parameters(), lr = 0.001)
-        for param in self.model.parameters():
-            print(param.data, param.size)
+        # init to zero
         o.zero_grad()
         songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
         random.shuffle(songs)
+
         for i, song in enumerate(songs):
             lyrics = song[0]
             genre = song[1]
-            pred = self.get_pred(lyrics)
+            pred = Variable(self.get_pred(lyrics))
             y = Variable(torch.LongTensor([self.label_encoder[genre]]))
 
             if i%PRINTERVAL == 0:
