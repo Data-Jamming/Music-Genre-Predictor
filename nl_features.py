@@ -211,7 +211,7 @@ def main() :
 		gen_dict(line[2], res_dict)
 		if(counter==0):
 			counter = counter +1
-			continue
+			continue	
 		writer.writerow(res_dict)
 		counter = counter +1
 main()

@@ -47,7 +47,7 @@ def automated_test():
 
 		# for i in [0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.3, 1.5, 1.7, 2, 2.3, 2.5, 2.7, 3, 3.3, 3.5, 3.7, 3.9, 4, 10, 15, 20, 30, 50, 70, 100, 200, 300, 400, 500]:
 		for i in [1, 100, 1000]:
-			clf = SVC(C = i, kernel = k)
+			clf = SVC(C = i, cache_size = 1000, kernel = k)
 			clf.fit(x_train, y_train)
 			for j in range(len(x_train)):
 				pred_cats.append(clf.predict(x_train[j]))
@@ -104,7 +104,7 @@ def manual_test():
 	global training_size
 	global testing_size
 	global matrix
-	clf = SVC(C = 1, kernel = "linear") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
+	clf = SVC(C = 1, cache_size = 1000, kernel = "linear") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
 	clf.fit(x_train, y_train)
 
 	# Individually test each of the points in the testing set
@@ -196,8 +196,8 @@ def main():
 	global matrix
 	global overall_size
 
-	# path = os.getcwd() + '/dataset/nl_features_subset.csv'
-	path = os.getcwd() + '/dataset/nl_features.csv'
+	path = os.getcwd() + '/dataset/nl_features_subset.csv'
+	# path = os.getcwd() + '/dataset/nl_features.csv'
 	csv_reader = dataset.load_data(path)
 	matrix = generate_full_matrix(csv_reader)
 
@@ -228,9 +228,15 @@ def main():
 		17. exist
 		18. inj
 		19. aux
+<<<<<<< HEAD
 		20. aa
 		21. abab
 		22. abba
+=======
+		20. aa - rhyme scheme
+		21. abab - rhyme scheme
+		22. abba - rhyme scheme
+>>>>>>> 85b184c4f24478e98298f4e996bd6fd7eb735807
 		'''
 
 		#TODO: Allow for different permutations of above to be ran, if we have to retrain the model each time
