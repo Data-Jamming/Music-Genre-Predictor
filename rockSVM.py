@@ -45,7 +45,7 @@ def automated_test():
 
 		# for i in [0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.3, 1.5, 1.7, 2, 2.3, 2.5, 2.7, 3, 3.3, 3.5, 3.7, 3.9, 4, 10, 15, 20, 30, 50, 70, 100, 200, 300, 400, 500]:
 		for i in [1, 100, 1000]:
-			clf = SVC(C = i, kernel = k)
+			clf = SVC(C = i, cache_size = 1000, kernel = k)
 			clf.fit(x_train, y_train)
 			scr = clf.score(x_test, y_test)
 
@@ -98,7 +98,7 @@ def manual_test():
 	global training_size
 	global testing_size
 	global matrix
-	clf = SVC(C = 1, kernel = "linear") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
+	clf = SVC(C = 1, cache_size = 1000, kernel = "linear") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
 	clf.fit(x_train, y_train)
 	
 	# Individually test each of the points in the testing set
@@ -190,8 +190,8 @@ def main():
 	global matrix
 	global overall_size
 
-	# path = os.getcwd() + '/dataset/nl_features_subset.csv'
-	path = os.getcwd() + '/dataset/nl_features.csv'
+	path = os.getcwd() + '/dataset/nl_features_subset.csv'
+	# path = os.getcwd() + '/dataset/nl_features.csv'
 	csv_reader = dataset.load_data(path)
 	matrix = generate_full_matrix(csv_reader)
 
@@ -222,14 +222,16 @@ def main():
 		17. exist
 		18. inj
 		19. aux
-		20. rhyme scheme
+		20. aa - rhyme scheme
+		21. abab - rhyme scheme
+		22. abba - rhyme scheme
 		'''
 
 		#TODO: Allow for different permutations of above to be ran, if we have to retrain the model each time
 		# we can just manually modify this
 
 		#Include all of the available features
-		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19])])
+		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19]), float(line[20]), float(line[21]), float(line[22])])
 
 
 		y.append(int(line[1]))
