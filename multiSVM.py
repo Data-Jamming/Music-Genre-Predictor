@@ -49,7 +49,8 @@ def automated_test():
 			clf = SVC(C = i, cache_size = 1000, kernel = k, decision_function_shape = "ovo")
 			clf.fit(x_train, y_train)
 			for j in range(len(x_test)):
-				preds.append(clf.predict(x_test[i]))
+				next = j + 1
+				preds.append(clf.predict(x_test[j: next]).item(0))
 			scr = clf.score(x_test, y_test)
 
 			if scr >= max_accuracy:
@@ -63,6 +64,7 @@ def automated_test():
 			print("actual distribution\n")
 			print(Counter(y_test))
 			print("predicted distribution\n")
+			print(preds)
 			print(Counter(preds))
 			preds.clear()
 			print("Kernel:", k , "Slack variable:", i, "Score:", scr)
