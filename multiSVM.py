@@ -66,6 +66,11 @@ def automated_test():
 			print("predicted distribution\n")
 			print(preds)
 			print(Counter(preds))
+			bad_count =0
+			for k in range(len(preds)):
+				if(preds[k]!=y_test[k]):
+					bad_count = bad_count +1
+			print(bad_count)
 			preds.clear()
 			print("Kernel:", k , "Slack variable:", i, "Score:", scr)
 		print()
