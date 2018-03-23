@@ -5,6 +5,7 @@ from utils import dataset
 import os
 import random
 import math
+from collections import Counter
 
 x_train = None
 x_test = None
@@ -33,12 +34,13 @@ def automated_test():
 	global training_size
 	global testing_size
 	print()
+	pred_cats = []
 	overall_best_accuracy = 0
 	overall_best_kernel = None
 	overall_best_slack_variable = None
 
 	for k in ['linear', 'poly', 'rbf']:
-		
+
 		# Create a list and store the highest one each time
 		max_accuracy = 0
 		max_slack_variable = None
@@ -47,6 +49,8 @@ def automated_test():
 		for i in [1, 100, 1000]:
 			clf = SVC(C = i, kernel = k)
 			clf.fit(x_train, y_train)
+			for j in range(len(x_train)):
+				pred_cats.append(clf.predict(x_train[j]))
 			scr = clf.score(x_test, y_test)
 
 			if scr >= max_accuracy:
@@ -57,7 +61,8 @@ def automated_test():
 				overall_best_accuracy = scr
 				overall_best_kernel = k
 				overall_best_slack_variable = i
-			
+			print(Counter(y_test))
+			print(Counter(pred_cats))
 			print("Kernel:", k , "Slack variable:", i, "Score:", scr)
 		print()
 		print("*********************************")
@@ -73,7 +78,8 @@ def automated_test():
 	print("Overall best accuracy occurred with kernel:", overall_best_kernel, "and Slack Variable", overall_best_slack_variable)
 	print("***************************************")
 
-	rock_count = 0
+	'''
+    rock_count = 0
 	for i in y_test:
 		if i == 1:
 			rock_count += 1
@@ -81,7 +87,7 @@ def automated_test():
 	accuracy = rock_count / len(y_test)
 	print("Total number of Rock songs found in test set: " + str(rock_count))
 	print("Total number of songs found in the test set: " + str(len(y_test)))
-	print("Accuracy of a Naive Classifier that always picks rock: " + str(accuracy))
+	print("Accuracy of a Naive Classifier that always picks rock: " + str(accuracy))'''
 
 
 '''
@@ -100,7 +106,7 @@ def manual_test():
 	global matrix
 	clf = SVC(C = 1, kernel = "linear") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
 	clf.fit(x_train, y_train)
-	
+
 	# Individually test each of the points in the testing set
 	answers = []
 	for i in range(training_size,len(x_scaled)):
@@ -222,14 +228,16 @@ def main():
 		17. exist
 		18. inj
 		19. aux
-		20. rhyme scheme
+		20. aa
+		21. abab
+		22. abba
 		'''
 
 		#TODO: Allow for different permutations of above to be ran, if we have to retrain the model each time
 		# we can just manually modify this
 
 		#Include all of the available features
-		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19])])
+		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19]), float(line[20]), float(line[21]), float(line[22])])
 
 
 		y.append(int(line[1]))
@@ -244,15 +252,15 @@ def main():
 	overall_size = len(x_scaled)
 
 	# Training data should be 0 - training_size
-	training_size = math.ceil(len(x_scaled) * .80) 
-	
+	training_size = math.ceil(len(x_scaled) * .80)
+
 	# Testing data should be testing_size (training_size + 1) - len(matrix)
 	# I guess because of the inclusive, exclusive testing_size should just start where training_size ends
 	testing_size = training_size
 
 	print("The length of training size is:", training_size)
 	print("The length of testing size is:", testing_size)
-	
+
 	# to be used for training - x_train should be used with y_train (they should correspond with eachother)
 	x_train = x_scaled[:training_size]
 	y_train = y[:training_size]
