@@ -8,6 +8,7 @@ import OHencoder
 import random
 
 PRINTERVAL = 1
+BATCH_SIZE = 50
 
 class Trainer():
     def __init__(self):
@@ -21,7 +22,7 @@ class Trainer():
         self.data = []
         self.labels = []
 
-        datasize = 1000 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 10000 #Just make this arbitrarily large when you want to use the whole dataset
 
         print("Loading data...")
         for i in range(datasize):
@@ -54,26 +55,33 @@ class Trainer():
     def train(self):
         criterion = nn.CrossEntropyLoss()
         o = torch.optim.SGD(self.model.parameters(), lr = 0.001)
-        for param in self.model.parameters():
-            print(param.data, param.size)
+        #for param in self.model.parameters():
+        #    print(param.data, param.size)
         o.zero_grad()
         songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
         random.shuffle(songs)
+        preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+        labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
         for i, song in enumerate(songs):
             lyrics = song[0]
             genre = song[1]
             pred = self.get_pred(lyrics)
-            y = Variable(torch.LongTensor([self.label_encoder[genre]]))
+            labels[i] = self.label_encoder[genre]
 
+            preds[i] = pred
+            
             if i%PRINTERVAL == 0:
                 value, index = torch.max(pred, 1)
                 #print(pred)
                 #print(value)
                 print(str(i)+ ":", "Guessing", self.label_decoder[int(index[0])], "With", float(value[0]), "confidence. Correct genre was", genre + ".")
 
-            loss = criterion(pred, y)
-            loss.backward()
-            o.step()
+            if (i+1)%BATCH_SIZE or i >= len(songs)-1:
+                loss = criterion(preds, labels)
+                loss.backward()
+                o.step()
+                preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+                labels = Variable(torch.LongTensor(BATCH_SIZE, 1).zero_())
 
 trainer = Trainer()
 trainer.train()
