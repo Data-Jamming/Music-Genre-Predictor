@@ -281,8 +281,8 @@ def main():
 	global matrix
 	global overall_size
 
-	path = os.getcwd() + '/dataset/nl_features_subset.csv'
-	# path = os.getcwd() + '/dataset/nl_features.csv'
+	# path = os.getcwd() + '/dataset/nl_features_subset.csv'
+	path = os.getcwd() + '/dataset/nl_features.csv'
 	csv_reader = dataset.load_data(path)
 	matrix = generate_full_matrix(csv_reader)
 
