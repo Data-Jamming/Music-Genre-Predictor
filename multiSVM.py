@@ -6,6 +6,9 @@ import os
 import random
 import math
 from collections import Counter
+from sklearn.externals import joblib
+
+genres_list = ["Rock", "Country", "Electronic", "Folk", "Hip-Hop", "Indie", "Jazz", "Metal", "Pop", "R&B"]
 
 x_train = None
 x_test = None
@@ -21,7 +24,83 @@ x_scaled = None
 
 matrix = None
 
+# Return the genre that is matched to a specific integer
+def int_to_genre(i):
+	if i == 1:
+		return "Rock"
+	elif i == 2:
+		return "Country"
+	elif i == 3:
+		return "Electronic"
+	elif i == 4:
+		return "Folk"
+	elif i == 5:
+		return "Hip-Hop"
+	elif i == 6:
+		return "Indie"
+	elif i == 7:
+		return "Jazz"
+	elif i == 8:
+		return "Metal"
+	elif i == 9:
+		return "Pop"
+	elif i == 10:
+		return "R&B"
 
+
+# For each category that we predicted incorrecty, what was the prediction that we actually made for that category
+# ex. Correct Category = ROCK, in the list number of times that we predicted Country, Pop, etc...
+
+# This will be useful for something like Country which could appear in the testing set ex. 2500 times but we actually only predict it 50 times, are we predicting ROCK all of the other times
+# Hence, this will tell us for each category that we are guessing wrong, what are we likely to predict instead
+def incorrect_predictions(preds, y_test):
+	global genres_list
+
+	# Dictionary of lists
+	incorrect = {"Rock": [], "Country": [], "Electronic": [], "Folk": [], "Hip-Hop": [], "Indie": [], "Jazz": [], "Metal": [], "Pop": [], "R&B": []}
+	for i in range(len(preds)):
+		if preds[i] != y_test[i]:
+			correct_genre = int_to_genre(y_test[i])
+			incorrect[correct_genre].append(int_to_genre(preds[i]))
+
+	# Iterate through all of the examples and print out what they were
+	print("For each Genre that was misclassified, the genre that was predicted by our SVM")
+	for genre in genres_list:
+		print(genre + ":", Counter(incorrect[genre]))
+	print()
+
+
+# Returns a dictionary of the number of times that a particular genre appeared in a particular array - could either be our prediction matrix, or the actual classification matrix
+def genre_count(y_test):
+	counts = {"Rock": 0, "Country": 0, "Electronic": 0, "Folk": 0, "Hip-Hop": 0, "Indie": 0, "Jazz": 0, "Metal": 0, "Pop": 0, "R&B": 0}
+
+	for i in range(len(y_test)):
+		if y_test[i] == 1:
+			counts["Rock"] += 1
+		elif y_test[i] == 2:
+			counts["Country"] += 1
+		elif y_test[i] == 3:
+			counts["Electronic"] += 1
+		elif y_test[i] == 4:
+			counts["Folk"] += 1
+		elif y_test[i] == 5:
+			counts["Hip-Hop"] += 1
+		elif y_test[i] == 6:
+			counts["Indie"] += 1
+		elif y_test[i] == 7:
+			counts["Jazz"] += 1
+		elif y_test[i] == 8:
+			counts["Metal"] += 1
+		elif y_test[i] == 9:
+			counts["Pop"] += 1
+		elif y_test[i] == 10:
+			counts["R&B"] += 1
+
+	return counts
+
+
+
+# Of the number of times that we predicted a particular category, how many times was the prediction of that category actually correct
 def genres_correct(preds, y_test):
 
 	rock_correct = 0
@@ -58,16 +137,31 @@ def genres_correct(preds, y_test):
 		elif preds[i] == y_test[i] and preds[i] == 10:
 			rb_correct += 1
 
-	print("1. Rock correct:", rock_correct)
-	print("2. Country correct:", country_correct)
-	print("3. Electronic correct:", electronic_correct)
-	print("4. Folk correct:", folk_correct)
-	print("5. Hip Hop correct:", hiphop_correct)
-	print("6. Indie correct:", indie_correct)
-	print("7. Jazz correct:", jazz_correct)
-	print("8. Metal correct:", metal_correct)
-	print("9. Pop correct:", pop_correct)
-	print("10. R&B Correct:", rb_correct)
+	# Retrieve dictionary of count of each genre
+	genre_counts = genre_count(y_test)
+
+	rock_accuracy = rock_correct/genre_counts["Rock"] * 100 if genre_counts["Rock"] > 0 else 0
+	country_accuracy = country_correct/genre_counts["Country"] * 10 if genre_counts["Country"] > 0 else 0
+	electronic_accuracy = electronic_correct/genre_counts["Electronic"] * 100 if genre_counts["Electronic"] > 0 else 0
+	folk_accuracy = folk_correct/genre_counts["Folk"] * 100 if genre_counts["Folk"] > 0 else 0
+	hiphop_accuracy = hiphop_correct/genre_counts["Hip-Hop"] * 100 if genre_counts["Hip-Hop"] > 0 else 0
+	indie_accuracy = indie_correct/genre_counts["Indie"] * 100 if genre_counts["Indie"] > 0 else 0
+	jazz_accuracy = jazz_correct/genre_counts["Jazz"] * 100 if genre_counts["Jazz"] > 0 else 0
+	metal_accuracy = metal_correct/genre_counts["Metal"] * 100 if genre_counts["Metal"] > 0 else 0
+	pop_accuracy = pop_correct/genre_counts["Pop"] * 100 if genre_counts["Pop"] > 0 else 0
+	rb_accuracy = rb_correct/genre_counts["R&B"] * 100 if genre_counts["R&B"] > 0 else 0
+
+	print("1. Rock correct:", rock_correct, "- Rock incorrect:", (genre_counts["Rock"] - rock_correct), "- Accuracy:", rock_accuracy)
+	print("2. Country correct:", country_correct, "- Country incorrect:", (genre_counts["Country"] - country_correct), "- Accuracy:", country_accuracy)
+	print("3. Electronic correct:", electronic_correct, "- Electronic incorrect:", (genre_counts["Electronic"] - electronic_correct), "- Accuracy:", electronic_accuracy)
+	print("4. Folk correct:", folk_correct, "- Folk incorrect:", (genre_counts["Folk"] - folk_correct), "- Accuracy:", folk_accuracy)
+	print("5. Hip Hop correct:", hiphop_correct, "- Hip-Hop incorrect:", (genre_counts["Hip-Hop"] - hiphop_correct), "- Accuracy:", hiphop_accuracy)
+	print("6. Indie correct:", indie_correct, "- Indie incorrect:", (genre_counts["Indie"] - indie_correct), "- Accuracy:", indie_accuracy)
+	print("7. Jazz correct:", jazz_correct, "- Jazz incorrect:", (genre_counts["Jazz"] - jazz_correct), "- Accuracy:", jazz_accuracy)
+	print("8. Metal correct:", metal_correct, "- Metal incorrect:", (genre_counts["Metal"] - metal_correct), "- Accuracy:", metal_accuracy)
+	print("9. Pop correct:", pop_correct, "- Pop incorrect:", (genre_counts["Pop"] - pop_correct), "- Accuracy:", pop_accuracy)
+	print("10. R&B Correct:", rb_correct, "- R&b incorrect:", (genre_counts["R&B"] - rb_correct), "- Accuracy:", rb_accuracy)
+	print()
 
 
 
@@ -111,18 +205,33 @@ def automated_test():
 				overall_best_accuracy = scr
 				overall_best_kernel = k
 				overall_best_slack_variable = i
-			print("actual distribution\n")
-			print(Counter(y_test))
-			print("predicted distribution\n")
-			print(Counter(preds))
-			bad_count =0
-			for l in range(len(preds)):
-				if(preds[l]!=y_test[l]):
-					bad_count = bad_count +1
-			print(bad_count)
+			print("actual distribution")
+
+			# print y_test in a readable format
+			y_test_labels = []
+			for a in range(len(y_test)):
+				y_test_labels.append(int_to_genre(y_test[a]))
+
+			print(Counter(y_test_labels))
+			print()
+			print("predicted distribution")
+
+			# Print preds in a readable format
+			preds_labels = []
+			for b in range(len(preds)):
+				preds_labels.append(int_to_genre(preds[b]))
+
+			print(Counter(preds_labels))
+			# bad_count =0
+			# for l in range(len(preds)):
+			# 	if(preds[l]!=y_test[l]):
+			# 		bad_count = bad_count +1
+			# print(bad_count)
 			genres_correct(preds, y_test)
+			incorrect_predictions(preds, y_test)
 			preds.clear()
 			print("Kernel:", k , "Slack variable:", i, "Score:", scr)
+			print("***********************************\n")
 		print()
 		print("*********************************")
 		print("Current Kernel:", k)
@@ -162,8 +271,15 @@ def manual_test():
 	global training_size
 	global testing_size
 	global matrix
+
 	clf = SVC(C = 100, cache_size = 1000, kernel = "linear", decision_function_shape = "ovo") # both linear and rbf appear to give an accuracy around 80%, decreasing the Slack Variable decreases accuracy
 	clf.fit(x_train, y_train)
+
+	# Once we have the model saved we can just import the model instead of having to train the model
+	# Step 1: dump the model after "fitting" it with the above code
+	# Step 2: Remove the "fit" command and just "load" the model
+	# joblib.dump(clf, "model1.pkl")
+	# clf = joblib.load("model1.pkl")
 
 	# Individually test each of the points in the testing set
 	answers = []
@@ -171,6 +287,9 @@ def manual_test():
 		next = i+1
 		answer = clf.predict(x_scaled[i: next])
 		answers.append(answer[0])
+
+	genre_count(y_test)
+	incorrect_predictions(answers, y_test)
 
 	print("Answers generated by the SVM, length =", len(answers))
 	print(answers)
@@ -342,9 +461,6 @@ def main():
 	# Testing data should be testing_size (training_size + 1) - len(matrix)
 	# I guess because of the inclusive, exclusive testing_size should just start where training_size ends
 	testing_size = training_size
-
-	print("The length of training size is:", training_size)
-	print("The length of testing size is:", testing_size)
 
 	# to be used for training - x_train should be used with y_train (they should correspond with eachother)
 	x_train = x_scaled[:training_size]
