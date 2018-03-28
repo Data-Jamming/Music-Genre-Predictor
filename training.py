@@ -22,7 +22,7 @@ class Trainer():
         self.data = []
         self.labels = []
 
-        datasize = 10000 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 1000 #Just make this arbitrarily large when you want to use the whole dataset
 
         print("Loading data...")
         for i in range(datasize):
@@ -41,7 +41,7 @@ class Trainer():
         self.label_decoder = list(self.label_encoder.keys())
 
         #print([data_enconder[word] for word in data[-1]])
-        self.model = rnn(len(self.data_encoder), [64, 64], [64, 64], len(self.label_encoder))
+        self.model = rnn(len(self.data_encoder), [256], [32], len(self.label_encoder))
 
     def get_pred(self, lyrics):
         rec = self.model.init_rec()
@@ -66,9 +66,9 @@ class Trainer():
             lyrics = song[0]
             genre = song[1]
             pred = self.get_pred(lyrics)
-            labels[i] = self.label_encoder[genre]
+            labels[i%BATCH_SIZE] = self.label_encoder[genre]
 
-            preds[i] = pred
+            preds[i%BATCH_SIZE] = pred
             
             if i%PRINTERVAL == 0:
                 value, index = torch.max(pred, 1)
@@ -76,12 +76,13 @@ class Trainer():
                 #print(value)
                 print(str(i)+ ":", "Guessing", self.label_decoder[int(index[0])], "With", float(value[0]), "confidence. Correct genre was", genre + ".")
 
-            if (i+1)%BATCH_SIZE or i >= len(songs)-1:
+            if (i+1)%BATCH_SIZE == 0 or i >= len(songs)-1:
                 loss = criterion(preds, labels)
+                
                 loss.backward()
                 o.step()
                 preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
-                labels = Variable(torch.LongTensor(BATCH_SIZE, 1).zero_())
+                labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
 
 trainer = Trainer()
 trainer.train()
