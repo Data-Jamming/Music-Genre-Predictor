@@ -7,6 +7,7 @@ import csv
 import string
 import re
 from nltk.corpus import cmudict
+from nltk.corpus import stopwords
 import nltk #change this later to a more specific import
 
 #globals
@@ -17,9 +18,10 @@ annotation_count=0
 avg_syll_per_line=0
 total_sylls=0
 word_count=0
-aa_count=0;
-abab_count =0;
-abba_count =0;
+aa_count=0
+abab_count =0
+abba_count =0
+
 
 
 #is digit
@@ -152,6 +154,20 @@ def count_rhymes(scheme):
 		if((scheme[i]==scheme[i+3]) and (scheme[i+1]==scheme[i+2])):
 			abba_count = abba_count +1
 
+def highest_freq(sentences):
+	words=[]
+	for s in sentences:
+		words += s.split()
+	words= [w for w in words if w not in stopwords.words("english")]
+	freqs = {}
+	for w in words:
+		try:
+			freqs[w] = freqs[w] + 1
+		except KeyError:
+			freqs[w] =1
+
+	return (max(freqs.values())/len(words))
+
 def gen_dict(lyrics, dict_res):
 	global POS_counts
 	global annotation_count
@@ -165,6 +181,7 @@ def gen_dict(lyrics, dict_res):
 	sentences = lyrics.split("\n")
 	sentences= [x for x in sentences if x!=[]]
 	count_things(sentences)
+	freq = highest_freq(sentences)
 	splits=[]
 	for s in sentences:
 	    splits.append(s.split())
@@ -192,6 +209,7 @@ def gen_dict(lyrics, dict_res):
 	dict_res['aa'] = aa_count
 	dict_res['abab'] = abab_count
 	dict_res['abba'] = abba_count
+	dict_res['freq'] = freq
 
 
 def main() :
@@ -200,7 +218,7 @@ def main() :
 	csv_reader = dataset.load_data(path)
 	new_path = os.getcwd() + '/dataset/nl_features.csv'
 	f=open(new_path, 'w', encoding="utf8")
-	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'aa','abab','abba']
+	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'aa','abab','abba','freq']
 	writer = csv.DictWriter(f, fieldnames=fieldnames)
 	writer.writeheader()
 	counter=0
@@ -211,7 +229,7 @@ def main() :
 		gen_dict(line[2], res_dict)
 		if(counter==0):
 			counter = counter +1
-			continue	
+			continue
 		writer.writerow(res_dict)
 		counter = counter +1
 main()
