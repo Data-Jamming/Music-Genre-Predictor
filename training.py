@@ -41,7 +41,7 @@ class Trainer():
         self.label_decoder = list(self.label_encoder.keys())
 
         #print([data_enconder[word] for word in data[-1]])
-        self.model = rnn(len(self.data_encoder), [256], [32], len(self.label_encoder))
+        self.model = rnn(len(self.data_encoder), [1], [16], len(self.label_encoder))
 
     def get_pred(self, lyrics):
         rec = self.model.init_rec()
@@ -77,10 +77,16 @@ class Trainer():
                 print(str(i)+ ":", "Guessing", self.label_decoder[int(index[0])], "With", float(value[0]), "confidence. Correct genre was", genre + ".")
 
             if (i+1)%BATCH_SIZE == 0 or i >= len(songs)-1:
+                print(0)
                 loss = criterion(preds, labels)
-                
+                print(1)
+
                 loss.backward()
+                print(2)
+
                 o.step()
+                print(3)
+
                 preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
                 labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
 

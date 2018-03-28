@@ -57,7 +57,7 @@ class rnn(nn.Module):
 
         rec=F.relu(self.rec_layers[0](combine))
         for l in self.rec_layers[1:]:
-            rec=F.relu(l(rec))
+            rec=F.tanh(l(rec))
 
         #print("output:", output)
         #print("rec:", rec)
