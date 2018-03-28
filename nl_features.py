@@ -165,8 +165,7 @@ def highest_freq(sentences):
 			freqs[w] = freqs[w] + 1
 		except KeyError:
 			freqs[w] =1
-
-	return (max(freqs.values())/len(words))
+	return (max(freqs.values())/len(words)) if len(freqs.values())!=0 else 0
 
 def gen_dict(lyrics, dict_res):
 	global POS_counts
@@ -226,6 +225,12 @@ def main() :
 		res_dict={}
 		res_dict['song'] = line[0]
 		res_dict['genre'] = line[1]
+		words =[]
+		for l in line[2].split("\n"):
+			words += l.split()
+		words = [w for w in words if w not in stopwords.words("english")]
+		if(len(words)==0):
+			continue
 		gen_dict(line[2], res_dict)
 		if(counter==0):
 			counter = counter +1
