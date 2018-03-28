@@ -435,13 +435,14 @@ def main():
 		20. aa - rhyme scheme
 		21. abab - rhyme scheme
 		22. abba - rhyme scheme
+		23. freq
 		'''
 
 		#TODO: Allow for different permutations of above to be ran, if we have to retrain the model each time
 		# we can just manually modify this
 
 		#Include all of the available features
-		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19]), float(line[20]), float(line[21]), float(line[22])])
+		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19]), float(line[20]), float(line[21]), float(line[22]), float(line[23])])
 
 
 		y.append(int(line[1]))
@@ -452,6 +453,8 @@ def main():
 	# Note: support vector machine algorithms are not scale invariant, so it is highly recommended to scale your data
 	# For example, scale each attribute on the inmput vector X to [0,1] or [-1,1]
 	x_scaled = preprocessing.scale(x)
+
+	# x_scaled = x
 
 	overall_size = len(x_scaled)
 
