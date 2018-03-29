@@ -16,6 +16,8 @@ def clean(row):
     if(genre is None):
         return None
     split = row[5].split('\n')
+    if(only_punctuation(split)):
+        return None
     if(len(split) < 5):
         return None
     l= is_en(row[5],split)
@@ -27,10 +29,19 @@ def clean(row):
 
 # Only checking for the "Not Available" case, decide if we want to remove "Other" as well
 def no_genre(genre):
-    if genre == "Not Available" or genre == "Other":
+    if genre == "Not Available" or genre == "Other" or genre=="None":
         return None
     else:
         return genre
+
+def only_punctuation(split):
+    words = []
+    for l in split:
+		words += l.split()
+		words = [w for w in words if w not in stopwords.words("english")]
+		if(len(words)==0):
+			return True
+    return False
 
 def is_en(text,split):
     not_eng=0;
