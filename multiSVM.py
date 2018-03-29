@@ -183,7 +183,7 @@ def automated_test():
 	overall_best_slack_variable = None
 	preds=[]
 	for k in ['linear', 'poly', 'rbf']:
-	# for k in ['linear']:
+	#for k in ['linear']:
 		# Create a list and store the highest one each time
 		max_accuracy = 0
 		max_slack_variable = None
