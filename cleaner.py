@@ -3,6 +3,7 @@
 import os
 # project imports here
 from utils import dataset
+from nltk.corpus import stopwords
 import langid
 import sys
 import re
@@ -37,10 +38,10 @@ def no_genre(genre):
 def only_punctuation(split):
     words = []
     for l in split:
-		words += l.split()
-		words = [w for w in words if w not in stopwords.words("english")]
-		if(len(words)==0):
-			return True
+        words += l.split()
+        words = [w for w in words if w not in stopwords.words("english")]
+        if(len(words)==0):
+            return True
     return False
 
 def is_en(text,split):
