@@ -50,7 +50,8 @@ def automated_test():
 			clf = SVC(C = i, cache_size = 1000, kernel = k)
 			clf.fit(x_train, y_train)
 			for j in range(len(x_train)):
-				pred_cats.append(clf.predict(x_train[j]))
+				next = j + 1
+				pred_cats.append(clf.predict(x_train[j: next]).item(0))
 			scr = clf.score(x_test, y_test)
 
 			if scr >= max_accuracy:
@@ -228,22 +229,20 @@ def main():
 		17. exist
 		18. inj
 		19. aux
-<<<<<<< HEAD
 		20. aa
 		21. abab
 		22. abba
-=======
 		20. aa - rhyme scheme
 		21. abab - rhyme scheme
 		22. abba - rhyme scheme
->>>>>>> 85b184c4f24478e98298f4e996bd6fd7eb735807
+		23. freq
 		'''
 
 		#TODO: Allow for different permutations of above to be ran, if we have to retrain the model each time
 		# we can just manually modify this
 
 		#Include all of the available features
-		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19]), float(line[20]), float(line[21]), float(line[22])])
+		x.append([float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]), float(line[14]), float(line[15]), float(line[16]), float(line[17]), float(line[18]), float(line[19]), float(line[20]), float(line[21]), float(line[22]), float(line[23])])
 
 
 		y.append(int(line[1]))
@@ -275,7 +274,7 @@ def main():
 	x_test = x_scaled[training_size:]
 	y_test = y[training_size:]
 
-	# manual_test()
+	manual_test()
 
 	automated_test()
 
