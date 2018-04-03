@@ -11,11 +11,11 @@ import os
 PRINTERVAL = 1
 BATCH_SIZE = 1 #For now, keep it as 1 each song is a batch for each word in the song
 MAX_EPOCHS = 1000
-LEARNING_RATE = 0.002
+LEARNING_RATE = 0.001
 VAL_RATIO = 0.1
 
-LOG_PATH = "logs/checkpoint.pth"
-SAVE_PATH = "save/best_model.pth"
+LOG_PATH = "logs/checkpoint02.pth"
+SAVE_PATH = "save/best_model02.pth"
 
 class Trainer():
     def __init__(self):
