@@ -42,8 +42,10 @@ class Trainer():
         self.data = self.data[:split_idx]
         self.labels = self.labels[:split_idx]
 
-        self.data_decoder = list(self.data_encoder.keys())  #Gives you word/genre from vector index
-        self.label_decoder = list(self.label_encoder.keys())
+        
+        
+        self.data_decoder = dict([(x[1], x[0]) for x in list(self.data_encoder.items())])  #Gives you word/genre from vector index
+        self.label_decoder = dict([(x[1], x[0]) for x in list(self.label_encoder.items())])
 
         #print([data_enconder[word] for word in data[-1]])
         self.model = rnn(len(self.data_encoder), [32], [32], len(self.label_encoder))
