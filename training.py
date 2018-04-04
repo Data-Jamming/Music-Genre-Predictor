@@ -12,7 +12,7 @@ import os
 PRINTERVAL = 1
 BATCH_SIZE = 1 #For now, keep it as 1 each song is a batch for each word in the song
 MAX_EPOCHS = 1000
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.002
 VAL_RATIO = 0.1
 SAVE_INTERVAL = 1000
 
@@ -25,7 +25,7 @@ SAVE_PATH = "save/best_model.pth"
 
 class Trainer():
     def __init__(self):
-        datasize = 25000 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 100 #Just make this arbitrarily large when you want to use the whole dataset
         print("Loading data...")
         if STRATIFY_DATA:
             self.data, self.labels = dataset.get_stratified_data(datasize)
@@ -55,7 +55,7 @@ class Trainer():
         self.num_classes = len(self.label_encoder)
 
         #print([data_enconder[word] for word in data[-1]])
-        self.model = rnn(len(self.data_encoder) + 1, [32], [32], self.num_classes)
+        self.model = rnn(len(self.data_encoder) + 1, [128], [128], self.num_classes)
         
         self.best_acc = 0
 
@@ -90,7 +90,7 @@ class Trainer():
             pred = self.get_pred(song)
             value, index = torch.max(torch.mean(pred, 0, True), 1)
             if self.label_encoder[self.val_labels[i].lower()] == int(index):
-                correct += 1
+                correct += 100
 
         acc = correct/len(self.val_data)
 

@@ -26,7 +26,7 @@ class rnn(nn.Module):
         # I'm not really sure how big this should be I just picked arbitrarily.
         # We might want it to be at least the size of n_classes to say how likely it thinks each class is
         # but maybe it should try to compress that info?
-        self.rec_size = n_classes * 8
+        self.rec_size = n_classes * 16
 
         self.n_input = n_input
 
