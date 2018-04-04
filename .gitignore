@@ -1,3 +1,7 @@
 dataset
 *.pyc
 .DS_Store
+
+# used to save/load RNN model
+logs/
+save/

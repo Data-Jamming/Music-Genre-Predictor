@@ -110,58 +110,60 @@ class Trainer():
                 'optimizer':self.optimizer.state_dict()
         }, SAVE_PATH)
 
-    def train(self):
+    def train(self, start_epoch=0):
+        """
+        Params:
+            start_epoch (int): current epoch number (non-zero if model was reloaded).
+        """
 
         #for param in self.model.parameters():
         #    print(param.size())
 
+        for i in range(start_epoch, MAX_EPOCHS):
+            songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
+            random.shuffle(songs)
+            preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+            labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
+            for i, song in enumerate(songs):
+                lyrics = song[0]
+                genre = song[1]
+                pred = self.get_pred(lyrics)
+                labels = Variable(torch.LongTensor([self.label_encoder[genre] for i in pred]))
 
-        songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
-        random.shuffle(songs)
-        preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
-        labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
-        for i, song in enumerate(songs):
-            lyrics = song[0]
-            genre = song[1]
-            pred = self.get_pred(lyrics)
-            labels = Variable(torch.LongTensor([self.label_encoder[genre] for i in pred]))
+                preds = pred
 
-            preds = pred
+                if (i+1)%PRINTERVAL == 0:
+                    value, index = torch.max(torch.mean(pred, 0, True), 1)
+                    #print(preds[i])
+                    #print(labels[i])
+                    print(f"{str(i)}: Guess={self.label_decoder[int(index[0])]} ({int(index[0])}) {genre}=Expected; confidence={float(value[0])}")
 
-            if (i+1)%PRINTERVAL == 0:
-                value, index = torch.max(torch.mean(pred, 0, True), 1)
-                #print(preds[i])
-                #print(labels[i])
-                print(str(i)+ ":", "Guessing", self.label_decoder[int(index[0])], "With", float(value[0]), "confidence. Correct genre was", genre + ".")
+                if (i+1)%BATCH_SIZE == 0 or i >= len(songs)-1:
+                    self.loss = self.criterion(preds, labels)
 
-            if (i+1)%BATCH_SIZE == 0 or i >= len(songs)-1:
-                self.loss = self.criterion(preds, labels)
+                    self.optimizer.zero_grad()
 
-                self.optimizer.zero_grad()
+                    self.loss.backward()
 
-                self.loss.backward()
-
-                self.optimizer.step()
-                preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
-                labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
+                    self.optimizer.step()
+                    preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+                    labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
+            # save checkpoint
+            acc = self.get_accuracy()
+            print("\nLoss:",self.loss.data[0],"\nAccuracy:", acc)
+            self.save_checkpoint(i+1, isbest=(acc == self.best_acc))
 
 def main():
     trainer = Trainer()
-    epoch_start = 0
+    start_epoch = 0
     if os.path.isfile(LOG_PATH):
         print("Checkpoint found! Resuming...")
         checkpoint = torch.load(LOG_PATH)
-        epoch_start = checkpoint['epoch']
+        start_epoch = checkpoint['epoch']
         trainer.model.load_state_dict(checkpoint['state_dict'])
         trainer.optimizer.load_state_dict(checkpoint['optimizer'])
         trainer.best_acc = checkpoint['best_acc']
-
-    for i in range(epoch_start, MAX_EPOCHS):
-        print("\nEpoch", i+1)
-        trainer.train()
-        acc = trainer.get_accuracy()
-        print("\nLoss:",trainer.loss.data[0],"\nAccuracy:", acc)
-        trainer.save_checkpoint(i+1, isbest=(acc == trainer.best_acc))
+    trainer.train(start_epoch=start_epoch)
 
 if __name__ == "__main__":
     main()
