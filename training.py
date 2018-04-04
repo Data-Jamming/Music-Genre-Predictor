@@ -55,7 +55,9 @@ class Trainer():
         self.data = self.data[:int(len(self.data)*(1-VAL_RATIO))]
         self.labels = self.labels[:int(len(self.labels)*(1-VAL_RATIO))]
         
-        #print([data_enconder[word] for word in data[-1]])
+        print(self.label_encoder)
+        print(self.label_encoder.keys())
+        
         self.model = rnn(len(self.data_encoder), [32], [32], len(self.label_encoder))
         self.best_acc = 0
         
