@@ -14,17 +14,18 @@ BATCH_SIZE = 1 #For now, keep it as 1 each song is a batch for each word in the 
 MAX_EPOCHS = 1000
 LEARNING_RATE = 0.001
 VAL_RATIO = 0.1
+SAVE_INTERVAL = 1000
 
 STRATIFY_DATA = True
 # arbitrary!
 NUM_GENRES = 10
 
-LOG_PATH = "logs/checkpoint02.pth"
-SAVE_PATH = "save/best_model02.pth"
+LOG_PATH = "logs/checkpoint.pth"
+SAVE_PATH = "save/best_model.pth"
 
 class Trainer():
     def __init__(self):
-        datasize = 1000 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 100000 #Just make this arbitrarily large when you want to use the whole dataset
         print("Loading data...")
         if STRATIFY_DATA:
             self.data, self.labels = dataset.get_stratified_data(datasize)
@@ -32,23 +33,25 @@ class Trainer():
             self.data, self.labels = dataset.get_data(datasize)
 
         print("Building encoder...")
-        self.data_encoder = OHencoder.encode(j for i in self.data for j in i)
-        self.label_encoder = OHencoder.encode(self.labels)
+        self.data_encoder = OHencoder.encode(self.data)
+        self.label_encoder = OHencoder.encode([self.labels])
 
+        for x in self.data_encoder:
+            self.data_encoder[x] += 1 
+            
         # split data into train and validation sets
         split_idx = int(len(self.data)*(1-VAL_RATIO))
         self.val_data = self.data[split_idx:]
         self.val_labels = self.labels[split_idx:]
         self.data = self.data[:split_idx]
         self.labels = self.labels[:split_idx]
-
-        
         
         self.data_decoder = dict([(x[1], x[0]) for x in list(self.data_encoder.items())])  #Gives you word/genre from vector index
         self.label_decoder = dict([(x[1], x[0]) for x in list(self.label_encoder.items())])
 
+        
         #print([data_enconder[word] for word in data[-1]])
-        self.model = rnn(len(self.data_encoder), [32], [32], len(self.label_encoder))
+        self.model = rnn(len(self.data_encoder) + 1, [32], [32], len(self.label_encoder))
         self.best_acc = 0
 
         self.criterion = nn.CrossEntropyLoss()
@@ -63,9 +66,11 @@ class Trainer():
         preds = Variable(torch.FloatTensor(len(lyrics), self.model.n_classes).zero_())
         for i, word in enumerate(lyrics):
             #print(word)
-            input = Variable(torch.zeros(1, len(self.data_encoder)))
-
-            input[0, self.data_encoder[word]] = 1
+            input = Variable(torch.zeros(1, len(self.data_encoder)+1))
+            if word in self.data_encoder:
+                input[0, self.data_encoder[word]] = 1
+            else:
+                input[0, 0] = 1
             pred, rec = self.model.forward(input, rec)
             preds[i] = pred
 
@@ -92,14 +97,18 @@ class Trainer():
             'epoch':epoch,
             'state_dict':self.model.state_dict(),
             'best_acc':self.best_acc,
-            'optimizer':self.optimizer.state_dict()
+            'optimizer':self.optimizer.state_dict(),
+            'data_encoder':self.data_encoder,
+            'label_encoder':self.label_encoder
         }, path)
         if isbest:
             torch.save({
                 'epoch':epoch,
                 'state_dict':self.model.state_dict(),
                 'best_acc':self.best_acc,
-                'optimizer':self.optimizer.state_dict()
+                'optimizer':self.optimizer.state_dict(),
+                'data_encoder':self.data_encoder,
+                'label_encoder':self.label_encoder
         }, SAVE_PATH)
 
     def train(self, start_epoch=0):
@@ -141,6 +150,12 @@ class Trainer():
                     preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
                     labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
             # save checkpoint
+                
+                if (i+1)%SAVE_INTERVAL == 0:
+                    acc = self.get_accuracy()
+                    print("\nLoss:",self.loss.data[0],"\nAccuracy:", acc)
+                    self.save_checkpoint(i+1, isbest=(acc == self.best_acc))
+            
             acc = self.get_accuracy()
             print("\nLoss:",self.loss.data[0],"\nAccuracy:", acc)
             self.save_checkpoint(i+1, isbest=(acc == self.best_acc))
@@ -156,6 +171,10 @@ def main():
             trainer.model.load_state_dict(checkpoint['state_dict'])
             trainer.optimizer.load_state_dict(checkpoint['optimizer'])
             trainer.best_acc = checkpoint['best_acc']
+            trainer.data_encoder = checkpoint['data_encoder']
+            trainer.label_encoder = checkpoint['label_encoder']
+            trainer.data_decoder = dict([(x[1], x[0]) for x in list(trainer.data_encoder.items())])  #Gives you word/genre from vector index
+            trainer.label_decoder = dict([(x[1], x[0]) for x in list(trainer.label_encoder.items())])
         except RuntimeError as e:
             print(f"ERR: Failed to load checkpoint!")
             print(e)

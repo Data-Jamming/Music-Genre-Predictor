@@ -35,6 +35,7 @@ def get_stratified_data(datasize):
             song = next(csv_reader)
         except StopIteration as e:
             print("Reached end of dataset")
+            break
 
         # based on our running genre count, determine whether
         # we want to keep this entry
