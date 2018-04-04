@@ -14,34 +14,23 @@ MAX_EPOCHS = 1000
 LEARNING_RATE = 0.001
 VAL_RATIO = 0.1
 
+STRATIFY_DATA = True
+# arbitrary!
+NUM_GENRES = 10
+
 LOG_PATH = "logs/checkpoint02.pth"
 SAVE_PATH = "save/best_model02.pth"
 
 class Trainer():
     def __init__(self):
-        csv_reader = dataset.load_data("dataset/cleaned_lyrics.csv")
-
-        next(csv_reader)
-
-        for i in range(0): #TEMPORARY
-            next(csv_reader)
-
-        self.data = []
         self.val_data = []
         self.labels = []
         self.val_labels = []
 
         datasize = 1000 #Just make this arbitrarily large when you want to use the whole dataset
+        self.read_data(datasize)
 
         print("Loading data...")
-        for i in range(datasize):
-            try:
-                song = next(csv_reader)
-                self.data.append(nltk.word_tokenize(song[2]))
-                self.labels.append(song[1])
-            except StopIteration:
-                break;
-
         self.val_data = self.data[int(len(self.data)*(1-VAL_RATIO)):]
         self.val_labels = self.labels[int(len(self.data)*(1-VAL_RATIO)):]
 
@@ -61,6 +50,58 @@ class Trainer():
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr = LEARNING_RATE)
+
+    def read_data(self, datasize, stratified=STRATIFY_DATA):
+        """Initializes and fills global data variable with specified number of entries."""
+        csv_reader = dataset.load_data("dataset/cleaned_lyrics.csv")
+        # skip header names (e.g. "genre", "lyrics", etc.)
+        next(csv_reader)
+
+        self.data = []
+        if STRATIFY_DATA:
+            genre_count = dict()
+            max_per_genre = datasize // NUM_GENRES
+            # if datasize is divisible by NUM_GENRES, max_entries = datasize
+            max_entries = NUM_GENRES * max_per_genre
+
+            num_entries = 0
+            while True:
+                try:
+                    song = next(csv_reader)
+                except StopIteration as e:
+                    print("Reached end of dataset")
+
+                # based on our running genre count, determine whether
+                # we want to keep this entry
+                genre = song[1]
+                cur_genre_count = genre_count.get(genre)
+                if cur_genre_count is None:
+                    # add genre to count if haven't seen it before
+                    genre_count[genre] = 1
+                elif cur_genre_count >= max_per_genre:
+                    # skip to next entry if we already have enough of this genre
+                    continue
+                else:
+                    genre_count[genre] += 1
+
+                num_entries += 1
+
+                self.data.append(nltk.word_tokenize(song[2]))
+                self.labels.append(genre)
+
+                # break out of loop if we've reached our total
+                if num_entries >= max_entries:
+                    break
+
+        else:
+            for i in range(datasize):
+                try:
+                    song = next(csv_reader)
+                    self.data.append(nltk.word_tokenize(song[2]))
+                    self.labels.append(song[1])
+                except StopIteration:
+                    break;
+
 
     def get_pred(self, lyrics):
         """Feed an entire song's lyrics into RNN word-by-word, recording the prediction for each word.
@@ -136,7 +177,7 @@ class Trainer():
                     value, index = torch.max(torch.mean(pred, 0, True), 1)
                     #print(preds[i])
                     #print(labels[i])
-                    print(f"{str(i)}: Guess={self.label_decoder[int(index[0])]} ({int(index[0])}) {genre}=Expected; confidence={float(value[0])}")
+                    print(f"{str(i)}: (guess) {self.label_decoder[int(index[0])]}=?={genre} (actual)\tconfidence={float(value[0])}")
 
                 if (i+1)%BATCH_SIZE == 0 or i >= len(songs)-1:
                     self.loss = self.criterion(preds, labels)
