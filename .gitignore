@@ -2,3 +2,7 @@ dataset
 *.pyc
 .DS_Store
 *.pth
+
+# used to save/load RNN model
+logs/
+save/
