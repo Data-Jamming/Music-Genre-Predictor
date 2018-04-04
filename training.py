@@ -25,7 +25,7 @@ SAVE_PATH = "save/best_model.pth"
 
 class Trainer():
     def __init__(self):
-        datasize = 100 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 100000 #Just make this arbitrarily large when you want to use the whole dataset
         print("Loading data...")
         if STRATIFY_DATA:
             self.data, self.labels = dataset.get_stratified_data(datasize)
