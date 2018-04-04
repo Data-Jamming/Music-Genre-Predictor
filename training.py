@@ -24,30 +24,26 @@ SAVE_PATH = "save/best_model02.pth"
 
 class Trainer():
     def __init__(self):
-        self.val_data = []
-        self.labels = []
-        self.val_labels = []
-
         datasize = 1000 #Just make this arbitrarily large when you want to use the whole dataset
-        # self.read_data(datasize)
+        print("Loading data...")
         if STRATIFY_DATA:
             self.data, self.labels = dataset.get_stratified_data(datasize)
         else:
             self.data, self.labels = dataset.get_data(datasize)
 
-        print("Loading data...")
-        self.val_data = self.data[int(len(self.data)*(1-VAL_RATIO)):]
-        self.val_labels = self.labels[int(len(self.data)*(1-VAL_RATIO)):]
-
         print("Building encoder...")
         self.data_encoder = OHencoder.encode(j for i in self.data for j in i)
         self.label_encoder = OHencoder.encode(self.labels)
 
+        # split data into train and validation sets
+        split_idx = int(len(self.data)*(1-VAL_RATIO))
+        self.val_data = self.data[split_idx:]
+        self.val_labels = self.labels[split_idx:]
+        self.data = self.data[:split_idx]
+        self.labels = self.labels[:split_idx]
+
         self.data_decoder = list(self.data_encoder.keys())  #Gives you word/genre from vector index
         self.label_decoder = list(self.label_encoder.keys())
-
-        self.data = self.data[:int(len(self.data)*(1-VAL_RATIO))]
-        self.labels = self.labels[:int(len(self.labels)*(1-VAL_RATIO))]
 
         #print([data_enconder[word] for word in data[-1]])
         self.model = rnn(len(self.data_encoder), [32], [32], len(self.label_encoder))
@@ -151,12 +147,16 @@ def main():
     trainer = Trainer()
     start_epoch = 0
     if os.path.isfile(LOG_PATH):
-        print("Checkpoint found! Resuming...")
-        checkpoint = torch.load(LOG_PATH)
-        start_epoch = checkpoint['epoch']
-        trainer.model.load_state_dict(checkpoint['state_dict'])
-        trainer.optimizer.load_state_dict(checkpoint['optimizer'])
-        trainer.best_acc = checkpoint['best_acc']
+        print("Checkpoint found! Loading...")
+        try:
+            checkpoint = torch.load(LOG_PATH)
+            start_epoch = checkpoint['epoch']
+            trainer.model.load_state_dict(checkpoint['state_dict'])
+            trainer.optimizer.load_state_dict(checkpoint['optimizer'])
+            trainer.best_acc = checkpoint['best_acc']
+        except RuntimeError as e:
+            print(f"ERR: Failed to load checkpoint!")
+            print(e)
     trainer.train(start_epoch=start_epoch)
 
 if __name__ == "__main__":
