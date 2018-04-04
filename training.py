@@ -25,7 +25,7 @@ SAVE_PATH = "save/best_model.pth"
 
 class Trainer():
     def __init__(self):
-        datasize = 100000 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 25000 #Just make this arbitrarily large when you want to use the whole dataset
         print("Loading data...")
         if STRATIFY_DATA:
             self.data, self.labels = dataset.get_stratified_data(datasize)
@@ -144,7 +144,7 @@ class Trainer():
                     value, index = torch.max(torch.mean(pred, 0, True), 1)
                     #print(preds[i])
                     #print(labels[i])
-                    print(f"{str(i)}: (guess) {self.label_decoder[int(index[0])]}=?={genre} (actual)\tconfidence={float(value[0])}")
+                    print(str(i) + ": (guess) " + self.label_decoder[int(index[0])] + "=?=" + genre + " (actual)\tconfidence=" + str(float(value[0])))
 
                 if (i+1)%BATCH_SIZE == 0 or i >= len(songs)-1:
                     self.loss = self.criterion(preds, labels)
@@ -183,7 +183,7 @@ def main():
             trainer.data_decoder = dict([(x[1], x[0]) for x in list(trainer.data_encoder.items())])  #Gives you word/genre from vector index
             trainer.label_decoder = dict([(x[1], x[0]) for x in list(trainer.label_encoder.items())])
         except RuntimeError as e:
-            print(f"ERR: Failed to load checkpoint!")
+            print("ERR: Failed to load checkpoint!")
             print(e)
     trainer.train(start_epoch=start_epoch)
 
