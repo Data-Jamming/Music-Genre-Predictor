@@ -25,7 +25,7 @@ SAVE_PATH = "save/best_model.pth"
 
 class Trainer():
     def __init__(self):
-        datasize = 100000 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 100 #Just make this arbitrarily large when you want to use the whole dataset
         print("Loading data...")
         if STRATIFY_DATA:
             self.data, self.labels = dataset.get_stratified_data(datasize)
@@ -33,8 +33,9 @@ class Trainer():
             self.data, self.labels = dataset.get_data(datasize)
 
         print("Building encoder...")
-        self.data_encoder = OHencoder.encode(self.data)
-        self.label_encoder = OHencoder.encode([self.labels])
+
+        self.data_encoder = OHencoder.map_to_int_ids(self.data, threshold = 4)
+        self.label_encoder = OHencoder.map_to_int_ids([self.labels])
 
         for x in self.data_encoder:
             self.data_encoder[x] += 1 
@@ -46,12 +47,16 @@ class Trainer():
         self.data = self.data[:split_idx]
         self.labels = self.labels[:split_idx]
         
+        # e.g. ["Sing", "me", "a", "song"]
         self.data_decoder = dict([(x[1], x[0]) for x in list(self.data_encoder.items())])  #Gives you word/genre from vector index
+        # e.g. ["Rock", "Pop", "Hip Hop"]
         self.label_decoder = dict([(x[1], x[0]) for x in list(self.label_encoder.items())])
 
-        
+        self.num_classes = len(self.label_encoder)
+
         #print([data_enconder[word] for word in data[-1]])
-        self.model = rnn(len(self.data_encoder) + 1, [32], [32], len(self.label_encoder))
+        self.model = rnn(len(self.data_encoder) + 1, [32], [32], self.num_classes)
+        
         self.best_acc = 0
 
         self.criterion = nn.CrossEntropyLoss()
@@ -68,9 +73,10 @@ class Trainer():
             #print(word)
             input = Variable(torch.zeros(1, len(self.data_encoder)+1))
             if word in self.data_encoder:
-                input[0, self.data_encoder[word]] = 1
+                input[0, self.data_encoder[word.lower()]] = 1
             else:
                 input[0, 0] = 1
+
             pred, rec = self.model.forward(input, rec)
             preds[i] = pred
 
@@ -78,11 +84,12 @@ class Trainer():
 
 
     def get_accuracy(self):
+        print("Validating model...")
         correct = 0
         for i, song in enumerate(self.val_data):
             pred = self.get_pred(song)
             value, index = torch.max(torch.mean(pred, 0, True), 1)
-            if self.label_encoder[self.val_labels[i]] == int(index):
+            if self.label_encoder[self.val_labels[i].lower()] == int(index):
                 correct += 1
 
         acc = correct/len(self.val_data)
@@ -123,13 +130,13 @@ class Trainer():
         for i in range(start_epoch, MAX_EPOCHS):
             songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
             random.shuffle(songs)
-            preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+            preds = Variable(torch.FloatTensor(BATCH_SIZE, self.num_classes).zero_())
             labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
             for i, song in enumerate(songs):
                 lyrics = song[0]
                 genre = song[1]
                 pred = self.get_pred(lyrics)
-                labels = Variable(torch.LongTensor([self.label_encoder[genre] for i in pred]))
+                labels = Variable(torch.LongTensor([self.label_encoder[genre.lower()] for i in pred]))
 
                 preds = pred
 
@@ -147,7 +154,7 @@ class Trainer():
                     self.loss.backward()
 
                     self.optimizer.step()
-                    preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+                    preds = Variable(torch.FloatTensor(BATCH_SIZE, self.num_classes).zero_())
                     labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
             # save checkpoint
                 
