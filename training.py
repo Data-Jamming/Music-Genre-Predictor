@@ -32,8 +32,8 @@ class Trainer():
             self.data, self.labels = dataset.get_data(datasize)
 
         print("Building encoder...")
-        self.data_encoder = OHencoder.encode(j for i in self.data for j in i)
-        self.label_encoder = OHencoder.encode(self.labels)
+        self.data_encoder = OHencoder.map_to_int_ids(j for i in self.data for j in i)
+        self.label_encoder = OHencoder.map_to_int_ids(self.labels)
 
         # split data into train and validation sets
         split_idx = int(len(self.data)*(1-VAL_RATIO))
@@ -42,11 +42,14 @@ class Trainer():
         self.data = self.data[:split_idx]
         self.labels = self.labels[:split_idx]
 
-        self.data_decoder = list(self.data_encoder.keys())  #Gives you word/genre from vector index
+        # e.g. ["Sing", "me", "a", "song"]
+        self.data_decoder = list(self.data_encoder.keys())
+        # e.g. ["Rock", "Pop", "Hip Hop"]
         self.label_decoder = list(self.label_encoder.keys())
+        self.num_classes = len(self.label_encoder)
 
         #print([data_enconder[word] for word in data[-1]])
-        self.model = rnn(len(self.data_encoder), [32], [32], len(self.label_encoder))
+        self.model = rnn(len(self.data_encoder), [32], [32], self.num_classes)
         self.best_acc = 0
 
         self.criterion = nn.CrossEntropyLoss()
@@ -63,7 +66,7 @@ class Trainer():
             #print(word)
             input = Variable(torch.zeros(1, len(self.data_encoder)))
 
-            input[0, self.data_encoder[word]] = 1
+            input[0, self.data_encoder[word.lower()]] = 1
             pred, rec = self.model.forward(input, rec)
             preds[i] = pred
 
@@ -71,11 +74,12 @@ class Trainer():
 
 
     def get_accuracy(self):
+        print("Validating model...")
         correct = 0
         for i, song in enumerate(self.val_data):
             pred = self.get_pred(song)
             value, index = torch.max(torch.mean(pred, 0, True), 1)
-            if self.label_encoder[self.val_labels[i]] == int(index):
+            if self.label_encoder[self.val_labels[i].lower()] == int(index):
                 correct += 1
 
         acc = correct/len(self.val_data)
@@ -112,13 +116,13 @@ class Trainer():
         for i in range(start_epoch, MAX_EPOCHS):
             songs = [[self.data[i], self.labels[i]] for i in range(len(self.data))]
             random.shuffle(songs)
-            preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+            preds = Variable(torch.FloatTensor(BATCH_SIZE, self.num_classes).zero_())
             labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
             for i, song in enumerate(songs):
                 lyrics = song[0]
                 genre = song[1]
                 pred = self.get_pred(lyrics)
-                labels = Variable(torch.LongTensor([self.label_encoder[genre] for i in pred]))
+                labels = Variable(torch.LongTensor([self.label_encoder[genre.lower()] for i in pred]))
 
                 preds = pred
 
@@ -136,7 +140,7 @@ class Trainer():
                     self.loss.backward()
 
                     self.optimizer.step()
-                    preds = Variable(torch.FloatTensor(BATCH_SIZE, len(self.label_encoder)).zero_())
+                    preds = Variable(torch.FloatTensor(BATCH_SIZE, self.num_classes).zero_())
                     labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
             # save checkpoint
             acc = self.get_accuracy()
