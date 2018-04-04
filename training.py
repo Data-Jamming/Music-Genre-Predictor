@@ -25,7 +25,7 @@ SAVE_PATH = "save/best_model.pth"
 
 class Trainer():
     def __init__(self):
-        datasize = 100 #Just make this arbitrarily large when you want to use the whole dataset
+        datasize = 250 #Just make this arbitrarily large when you want to use the whole dataset
         print("Loading data...")
         if STRATIFY_DATA:
             self.data, self.labels = dataset.get_stratified_data(datasize)
@@ -39,6 +39,19 @@ class Trainer():
 
         for x in self.data_encoder:
             self.data_encoder[x] += 1 
+            
+        shuffle = [i for i in range(len(self.data))]
+        random.shuffle(shuffle)
+        
+        data_clone = self.data.copy()
+        labels_clone = self.labels.copy()
+        
+        for i, s in enumerate(shuffle):
+            self.data[i] = data_clone[s]
+            self.labels[i] = labels_clone[s]
+            
+        data_clone = None
+        labels_clone = None
             
         # split data into train and validation sets
         split_idx = int(len(self.data)*(1-VAL_RATIO))
@@ -89,6 +102,8 @@ class Trainer():
         for i, song in enumerate(self.val_data):
             pred = self.get_pred(song)
             value, index = torch.max(torch.mean(pred, 0, True), 1)
+            print(self.label_encoder[self.val_labels[i].lower()])
+            print(int(index))
             if self.label_encoder[self.val_labels[i].lower()] == int(index):
                 correct += 100
 
