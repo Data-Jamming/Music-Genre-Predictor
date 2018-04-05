@@ -215,12 +215,28 @@ def main() :
 
 	path = os.getcwd() + '/dataset/cleaned_lyrics.csv'
 	csv_reader = dataset.load_data(path)
-	new_path = os.getcwd() + '/dataset/nl_features.csv'
+	new_path = os.getcwd() + '/dataset/nl_features_stratified2.csv'
 	f=open(new_path, 'w', encoding="utf8")
 	fieldnames = ['song', 'genre','annotations', 'syllables','syll_per_line','words','verb','adj','noun','pre-det','det','prep','pronoun','pos','conj','cardinal','adverb','particle','exist','inj','aux', 'aa','abab','abba','freq']
 	writer = csv.DictWriter(f, fieldnames=fieldnames)
 	writer.writeheader()
 	counter=0
+	data, labels = dataset.get_stratified_data(2000, True, False)
+
+	# for reading from the stratified dataset
+	for i in range(len(data)):
+		res_dict={}
+		res_dict['song'] = "Test"
+		res_dict['genre'] = labels[i]
+		gen_dict(data[i], res_dict)
+	
+
+		#if counter == 10001:
+			#break
+		writer.writerow(res_dict)
+		counter = counter +1
+
+	'''
 	for line in csv_reader:
 		res_dict={}
 		res_dict['song'] = line[0]
@@ -229,6 +245,10 @@ def main() :
 		if(counter==0):
 			counter = counter +1
 			continue
+
+		if counter == 10001:
+			break
 		writer.writerow(res_dict)
 		counter = counter +1
+	'''
 main()

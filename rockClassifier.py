@@ -8,7 +8,7 @@ import csv
 # The Genre of the song should always be listed at index 1 of the row
 def main():
 	# path = os.getcwd() + "/dataset/cleaned_lyrics.csv"
-	path = os.getcwd() + "/dataset/nl_features.csv"
+	path = os.getcwd() + "/dataset/nl_features_subset.csv"
 	csv_reader = dataset.load_data(path)
 
 	rock_count = 0

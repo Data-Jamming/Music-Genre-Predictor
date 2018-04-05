@@ -11,7 +11,7 @@ def load_data(dataset_path):
     csv_reader = csv.reader(csv_file)
     return csv_reader
 
-def get_stratified_data(datasize, shuffle=True):
+def get_stratified_data(datasize, shuffle=True, tokenize=True):
     """Retrieves genre and lyrics for specified number of entries.
     NOTE: classes are balanced exactly, with datasize//NUM_GENRES entries each.
 
@@ -53,7 +53,10 @@ def get_stratified_data(datasize, shuffle=True):
 
         num_entries += 1
 
-        data.append(nltk.word_tokenize(song[2]))
+        if tokenize:
+        	data.append(nltk.word_tokenize(song[2]))
+        else:
+       		data.append(song[2])
         labels.append(genre)
 
         # break out of loop if we've reached our total

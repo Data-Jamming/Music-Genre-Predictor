@@ -16,6 +16,10 @@ x_test = None
 y_train = None
 y_test = None
 
+x_validation = None
+y_validation = None
+
+validation_size = None
 training_size = None
 testing_size = None
 overall_size = None
@@ -23,6 +27,9 @@ overall_size = None
 x_scaled = None
 
 matrix = None
+
+# Whether or not to running the validation set
+VALIDATE = False
 
 # Return the genre that is matched to a specific integer
 def int_to_genre(i):
@@ -177,12 +184,14 @@ def automated_test():
 	global x_scaled
 	global training_size
 	global testing_size
+	global validation_size
+	global VALIDATE
 	print()
 	overall_best_accuracy = 0
 	overall_best_kernel = None
 	overall_best_slack_variable = None
 	preds=[]
-	for k in ['linear', 'poly', 'rbf']:
+	for k in ['rbf', 'linear', 'poly']:
 	#for k in ['linear']:
 		# Create a list and store the highest one each time
 		max_accuracy = 0
@@ -191,7 +200,21 @@ def automated_test():
 		# for i in [0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.3, 1.5, 1.7, 2, 2.3, 2.5, 2.7, 3, 3.3, 3.5, 3.7, 3.9, 4, 10, 15, 20, 30, 50, 70, 100, 200, 300, 400, 500]:
 		for i in [1, 50, 100]:
 			clf = SVC(C = i, cache_size = 1000, kernel = k, decision_function_shape = "ovo")
-			clf.fit(x_train, y_train)
+			
+			strats = [0, math.ceil(training_size * .20), math.ceil(training_size * .40), math.ceil(training_size * .60), math.ceil(training_size * .80), training_size]
+			# I want to be training the model in batches
+
+			# If we don't want to bother with the validation - not quite working
+			if VALIDATE:		
+				for v in range(len(strats)-1):
+					clf.fit(x_train[strats[v]: strats[v+1]], y_train[strats[v]: strats[v+1]])
+					validation_accuracy = clf.score(x_validation, y_validation)
+					print("**************************************")
+					print("THE VALIDATION ACCURACY IS: " + str(validation_accuracy))
+					print("**************************************")
+			else:
+				clf.fit(x_train, y_train)
+
 			for j in range(len(x_test)):
 				next = j + 1
 				preds.append(clf.predict(x_test[j: next]).item(0))
@@ -385,7 +408,7 @@ def generate_full_matrix(csv_reader):
 		matrix.append(currentSong)
 
 		# Shuffle the matrix before separating into the feature matrix and the classification vector
-		random.shuffle(matrix)
+		#random.shuffle(matrix)
 	return matrix
 
 
@@ -399,9 +422,11 @@ def main():
 	global testing_size
 	global matrix
 	global overall_size
+	global x_validation
+	global y_validation
 
-	# path = os.getcwd() + '/dataset/nl_features_subset.csv'
-	path = os.getcwd() + '/dataset/nl_features.csv'
+	path = os.getcwd() + '/dataset/nl_features_stratified2.csv'
+	#path = os.getcwd() + '/dataset/nl_features.csv'
 	csv_reader = dataset.load_data(path)
 	matrix = generate_full_matrix(csv_reader)
 
@@ -461,6 +486,8 @@ def main():
 	# Training data should be 0 - training_size
 	training_size = math.ceil(len(x_scaled) * .80)
 
+	validation_size = math.ceil(len(x_scaled) * 90)
+
 	# Testing data should be testing_size (training_size + 1) - len(matrix)
 	# I guess because of the inclusive, exclusive testing_size should just start where training_size ends
 	testing_size = training_size
@@ -469,7 +496,14 @@ def main():
 	x_train = x_scaled[:training_size]
 	y_train = y[:training_size]
 
+	x_validation = x_scaled[training_size: validation_size]
+	y_validation = y[training_size: validation_size]
+
+
+	#x_test = x_scaled[validation_size:]
+	#y_test = y[validation_size:]
 	# to be used for testing - x_test should be used with y_test (they should correspond with eachother)
+	# old code that was being used when there was only training and test
 	x_test = x_scaled[training_size:]
 	y_test = y[training_size:]
 
