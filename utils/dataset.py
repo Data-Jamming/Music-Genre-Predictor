@@ -1,5 +1,6 @@
 import csv
 import nltk
+import numpy as np
 
 # arbitrary!
 NUM_GENRES = 10
@@ -10,7 +11,7 @@ def load_data(dataset_path):
     csv_reader = csv.reader(csv_file)
     return csv_reader
 
-def get_stratified_data(datasize):
+def get_stratified_data(datasize, shuffle=True):
     """Retrieves genre and lyrics for specified number of entries.
     NOTE: classes are balanced exactly, with datasize//NUM_GENRES entries each.
 
@@ -58,6 +59,15 @@ def get_stratified_data(datasize):
         # break out of loop if we've reached our total
         if num_entries >= max_entries:
             break
+    if shuffle:
+        data, labels = shuffle_in_unison(data, labels)
+    return data, labels
+
+def shuffle_in_unison(data, labels):
+    # use the same permutation of indicies to keep data and labels aligned
+    shuffle_indices = np.random.permutation(len(data))
+    data = np.asarray(data)[shuffle_indices].tolist()
+    labels = np.asarray(labels)[shuffle_indices].tolist()
     return data, labels
 
 def read_first_n_entries(n=1000):
