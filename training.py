@@ -38,28 +38,28 @@ class Trainer():
         self.label_encoder = OHencoder.map_to_int_ids([self.labels])
 
         for x in self.data_encoder:
-            self.data_encoder[x] += 1 
-            
+            self.data_encoder[x] += 1
+
         shuffle = [i for i in range(len(self.data))]
         random.shuffle(shuffle)
-        
+
         data_clone = self.data.copy()
         labels_clone = self.labels.copy()
-        
+
         for i, s in enumerate(shuffle):
             self.data[i] = data_clone[s]
             self.labels[i] = labels_clone[s]
-            
+
         data_clone = None
         labels_clone = None
-            
+
         # split data into train and validation sets
         split_idx = int(len(self.data)*(1-VAL_RATIO))
         self.val_data = self.data[split_idx:]
         self.val_labels = self.labels[split_idx:]
         self.data = self.data[:split_idx]
         self.labels = self.labels[:split_idx]
-        
+
         # e.g. ["Sing", "me", "a", "song"]
         self.data_decoder = dict([(x[1], x[0]) for x in list(self.data_encoder.items())])  #Gives you word/genre from vector index
         # e.g. ["Rock", "Pop", "Hip Hop"]
@@ -69,7 +69,7 @@ class Trainer():
 
         #print([data_enconder[word] for word in data[-1]])
         self.model = rnn(len(self.data_encoder) + 1, [128], [128], self.num_classes)
-        
+
         self.best_acc = 0
 
         self.criterion = nn.CrossEntropyLoss()
@@ -172,12 +172,12 @@ class Trainer():
                     preds = Variable(torch.FloatTensor(BATCH_SIZE, self.num_classes).zero_())
                     labels = Variable(torch.LongTensor(BATCH_SIZE).zero_())
             # save checkpoint
-                
+
                 if (i+1)%SAVE_INTERVAL == 0:
                     acc = self.get_accuracy()
                     print("\nLoss:",self.loss.data[0],"\nAccuracy:", acc)
                     self.save_checkpoint(i+1, isbest=(acc == self.best_acc))
-            
+
             acc = self.get_accuracy()
             print("\nLoss:",self.loss.data[0],"\nAccuracy:", acc)
             self.save_checkpoint(i+1, isbest=(acc == self.best_acc))
